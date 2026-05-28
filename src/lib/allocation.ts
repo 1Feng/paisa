@@ -18,6 +18,21 @@ import {
 import COLORS, { generateColorScheme } from "./colors";
 import chroma from "chroma-js";
 import { ALLOCATION_ROOT, allocationNodeLabel, timelineGroupLabel } from "./allocation_label";
+import { fitTreemapLabel } from "./treemap_label";
+
+// Approximate rendered font sizes (in px) for the two label lines inside
+// each treemap cell. The Bulma `.heading` class lands around 11px in the
+// stock theme; the percent line uses a smaller size set inline below. Kept
+// here as constants so `fitTreemapLabel` agrees with what the browser will
+// actually paint.
+const TREEMAP_LABEL_FONT_PX = 11;
+const TREEMAP_PERCENT_FONT_PX = 9;
+
+// Horizontal padding the `.node` flex layout reserves around its labels.
+// Subtracted from the cell width before passing it to `fitTreemapLabel` so
+// the truncation budget reflects the actual paintable area rather than
+// the raw rect.
+const TREEMAP_LABEL_HPADDING_PX = 4;
 
 export function renderAllocationTarget(
   allocationTargets: AllocationTarget[],
@@ -294,13 +309,21 @@ function renderPartition(
   cell
     .append("p")
     .attr("class", "heading has-text-weight-bold")
-    .text((d) => allocationNodeLabel(d.id, d.data));
+    .text((d: any) => {
+      const label = allocationNodeLabel(d.id, d.data);
+      const cellWidth = d.x1 - d.x0 - TREEMAP_LABEL_HPADDING_PX;
+      return fitTreemapLabel(label, cellWidth, TREEMAP_LABEL_FONT_PX);
+    });
 
   cell
     .append("p")
     .attr("class", "heading has-text-weight-bold")
     .style("font-size", ".5 rem")
-    .text(percent);
+    .text((d: any) => {
+      const label = percent(d);
+      const cellWidth = d.x1 - d.x0 - TREEMAP_LABEL_HPADDING_PX;
+      return fitTreemapLabel(label, cellWidth, TREEMAP_PERCENT_FONT_PX);
+    });
 }
 
 export function renderAllocationTimeline(
