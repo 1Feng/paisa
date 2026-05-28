@@ -4,9 +4,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ananthakumaran/paisa/internal/config"
 	"github.com/ananthakumaran/paisa/internal/model/posting"
 	"github.com/ananthakumaran/paisa/internal/model/transaction"
 	"github.com/ananthakumaran/paisa/internal/query"
+	"github.com/ananthakumaran/paisa/internal/service"
 	"github.com/ananthakumaran/paisa/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
@@ -59,7 +61,7 @@ func GetCurrentExpense(db *gorm.DB) map[string][]posting.Posting {
 func GetExpense(db *gorm.DB) gin.H {
 	expenses := query.Init(db).Like("Expenses:%").NotAccountPrefix("Expenses:Tax").All()
 	incomes := query.Init(db).Like("Income:%").All()
-	investments := query.Init(db).Like("Assets:%").NotAccountPrefix("Assets:Checking").All()
+	investments := computeExpenseInvestments(db)
 	taxes := query.Init(db).AccountPrefix("Expenses:Tax").All()
 	postings := query.Init(db).All()
 
@@ -83,6 +85,42 @@ func GetExpense(db *gorm.DB) gin.H {
 			"taxes":           utils.GroupByCalendarYear(taxes),
 			"expense_summary": computeExpenseSummary(expenses, "2006")},
 		"graph": graph}
+}
+
+// computeExpenseInvestments returns the asset-flow postings that count as
+// real investments for the "净投资 / Net Investment" tile on the
+// /expense/{monthly,yearly} pages.
+//
+// History: this used to be a raw `Assets:* NOT Assets:Checking` query,
+// which collected every Saving / Wallet / Bridge leg too — so a month
+// where the user simply spent money (an `Expenses:* / Assets:Saving:CMB`
+// pair) showed a large NEGATIVE "net investment" (issue #64 R5: -¥23k /
+// -639% of net income on mydata). The Investment Timeline page already
+// applies the right filters at /api/investment; here we mirror them so
+// the two pages agree.
+//
+// The filters are, in order:
+//  1. drop stock splits — these are pure unit-count changes and never a
+//     fresh investment flow (matches /api/investment).
+//  2. drop legs of an internal transfer (M0-B `transfer_accounts`) so
+//     moving cash between two Bridge / brokerage accounts does not net
+//     out into a phantom -X / +X pair when categories differ.
+//  3. keep only postings whose account resolves to an investment-kind
+//     (M1-E `filterOutNonInvestmentKinds`: mutual_fund, stock, bond,
+//     structured_deposit, tax_deferred_fund, crypto). Cash-like Saving
+//     accounts and durable assets (real_estate, vehicle) drop out.
+//
+// The `NotAccountPrefix("Assets:Checking")` clause that used to live
+// here is now redundant — `Assets:Checking` resolves to `bank_current`
+// which (3) would drop anyway — but we keep it as a fast pre-filter so
+// large `Assets:Checking` journals don't pay the per-row classification
+// cost.
+func computeExpenseInvestments(db *gorm.DB) []posting.Posting {
+	assets := query.Init(db).Like("Assets:%").NotAccountPrefix("Assets:Checking").All()
+	assets = lo.Filter(assets, func(p posting.Posting, _ int) bool { return !service.IsStockSplit(db, p) })
+	assets = filterOutInternalTransfers(db, assets)
+	assets = filterOutNonInvestmentKinds(assets, toAccountLookup(config.GetConfig().Accounts))
+	return assets
 }
 
 // computeExpenseSummary buckets expense postings by the date layout

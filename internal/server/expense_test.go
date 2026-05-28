@@ -4,9 +4,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ananthakumaran/paisa/internal/config"
+	"github.com/ananthakumaran/paisa/internal/model/account"
 	"github.com/ananthakumaran/paisa/internal/model/posting"
+	"github.com/ananthakumaran/paisa/internal/model/price"
+	"github.com/ananthakumaran/paisa/internal/model/transaction"
+	"github.com/ananthakumaran/paisa/internal/service"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // makeExpensePosting builds a minimal expense posting fixture. In paisa's
@@ -64,6 +71,178 @@ func TestComputeExpenseSummary_NoRefund(t *testing.T) {
 	assert.True(t, got.Gross.Equal(decimal.NewFromInt(350)))
 	assert.True(t, got.Refunds.IsZero(), "no refund → refunds must be zero, got %s", got.Refunds.String())
 	assert.True(t, got.Net.Equal(decimal.NewFromInt(350)))
+}
+
+// expenseInMemoryDB returns an in-memory sqlite gorm.DB with only the tables
+// computeExpenseInvestments touches already migrated.
+func expenseInMemoryDB(t *testing.T) *gorm.DB {
+	t.Helper()
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	assert.NoError(t, err)
+	assert.NoError(t, db.AutoMigrate(&posting.Posting{}))
+	assert.NoError(t, db.AutoMigrate(&price.Price{}))
+	return db
+}
+
+func makeAssetLeg(txID, account, commodity string, amount float64, date time.Time) posting.Posting {
+	return posting.Posting{
+		TransactionID: txID,
+		Date:          date,
+		Account:       account,
+		Commodity:     commodity,
+		Quantity:      decimal.NewFromFloat(amount),
+		Amount:        decimal.NewFromFloat(amount),
+		MarketAmount:  decimal.NewFromFloat(amount),
+	}
+}
+
+// TestComputeExpenseInvestments_DropsSpendingFromSavings — issue #64 R5:
+// the /expense/monthly page treated every Assets:* posting (minus the
+// hard-coded Assets:Checking) as an investment. A month of regular
+// spending therefore produced a large NEGATIVE "净投资" (-¥23,026.51 /
+// -639% of net income on mydata). The fix routes the investments field
+// through the same M1-E kind filter the /api/investment page uses, so
+// bank_current / bank_savings legs of an Expenses:* transaction drop
+// out and the tile reflects real investment flow.
+func TestComputeExpenseInvestments_DropsSpendingFromSavings(t *testing.T) {
+	prev := config.SetConfigForTest(config.Config{
+		DefaultCurrency: "CNY",
+		BaseCurrency:    "CNY",
+		TimeZone:        "UTC",
+		Locale:          "zh-CN",
+		Accounts: []config.Account{
+			{Name: "Assets:Saving:CMB", Kind: account.BankCurrent},
+		},
+	})
+	defer config.SetConfigForTest(prev)
+	service.ClearInterestCache()
+	service.ClearPriceCache()
+	transaction.ClearCache()
+
+	db := expenseInMemoryDB(t)
+	d := time.Date(2026, 5, 10, 0, 0, 0, 0, time.UTC)
+	db.Create(&[]posting.Posting{
+		makeAssetLeg("tx-spend", "Assets:Saving:CMB", "CNY", -85, d),
+	})
+
+	got := computeExpenseInvestments(db)
+	for _, p := range got {
+		assert.NotEqual(t, "Assets:Saving:CMB", p.Account,
+			"a bank_current spending leg leaked into net investment (R5 regression)")
+	}
+	assert.Empty(t, got, "month with only spending should report 0 investment postings")
+}
+
+// TestComputeExpenseInvestments_KeepsRealBrokeragePurchase — sanity check
+// that a genuine brokerage buy (mutual_fund kind) IS counted.
+func TestComputeExpenseInvestments_KeepsRealBrokeragePurchase(t *testing.T) {
+	prev := config.SetConfigForTest(config.Config{
+		DefaultCurrency: "CNY",
+		BaseCurrency:    "CNY",
+		TimeZone:        "UTC",
+		Locale:          "zh-CN",
+		Accounts: []config.Account{
+			{Name: "Assets:Brokerage:DanJuan", Kind: account.MutualFund},
+			{Name: "Assets:Saving:CMB", Kind: account.BankCurrent},
+		},
+	})
+	defer config.SetConfigForTest(prev)
+	service.ClearInterestCache()
+	service.ClearPriceCache()
+	transaction.ClearCache()
+
+	db := expenseInMemoryDB(t)
+	d := time.Date(2026, 5, 10, 0, 0, 0, 0, time.UTC)
+	db.Create(&[]posting.Posting{
+		makeAssetLeg("tx-buy", "Assets:Brokerage:DanJuan", "CNY", 1000, d),
+		makeAssetLeg("tx-buy", "Assets:Saving:CMB", "CNY", -1000, d),
+	})
+
+	got := computeExpenseInvestments(db)
+	assert.Len(t, got, 1, "exactly one investment leg should survive")
+	assert.Equal(t, "Assets:Brokerage:DanJuan", got[0].Account)
+	assert.True(t, got[0].Amount.Equal(decimal.NewFromInt(1000)),
+		"brokerage buy amount should be +1000, got %s", got[0].Amount.String())
+}
+
+// TestComputeExpenseInvestments_DropsBridgeTransfers — M0-B
+// `transfer_accounts` integration. A Bridge transfer is not a fresh
+// investment; the net effect on the portfolio is zero.
+func TestComputeExpenseInvestments_DropsBridgeTransfers(t *testing.T) {
+	prev := config.SetConfigForTest(config.Config{
+		DefaultCurrency:  "CNY",
+		BaseCurrency:     "CNY",
+		TimeZone:         "UTC",
+		Locale:           "zh-CN",
+		TransferAccounts: []string{"Assets:Bridge:*"},
+		Accounts: []config.Account{
+			{Name: "Assets:Brokerage:PASC", Kind: account.Stock},
+			{Name: "Assets:Bridge:Brokerage:PASC", Kind: account.CashEquivalent},
+		},
+	})
+	defer config.SetConfigForTest(prev)
+	service.ClearInterestCache()
+	service.ClearPriceCache()
+	transaction.ClearCache()
+
+	db := expenseInMemoryDB(t)
+	d := time.Date(2026, 5, 10, 0, 0, 0, 0, time.UTC)
+	db.Create(&[]posting.Posting{
+		makeAssetLeg("tx-bridge", "Assets:Brokerage:PASC", "CNY", 2500, d),
+		makeAssetLeg("tx-bridge", "Assets:Bridge:Brokerage:PASC", "CNY", -2500, d),
+	})
+
+	got := computeExpenseInvestments(db)
+	assert.Empty(t, got, "Bridge transfer should be fully filtered out, got %d postings", len(got))
+}
+
+// TestComputeExpenseInvestments_MydataMayFixture replays the exact bug
+// scenario from issue #64 R5 (May 2026 on mydata): one cross-currency
+// trans, one savings deposit, and several regular expense legs. None of
+// these should count as "net investment". Before the fix this returned
+// -¥23,026.76 (= -639% of net income).
+func TestComputeExpenseInvestments_MydataMayFixture(t *testing.T) {
+	prev := config.SetConfigForTest(config.Config{
+		DefaultCurrency:  "CNY",
+		BaseCurrency:     "CNY",
+		TimeZone:         "UTC",
+		Locale:           "zh-CN",
+		TransferAccounts: []string{"Assets:Bridge:*"},
+		Accounts: []config.Account{
+			{Name: "Assets:Saving:CMB", Kind: account.BankCurrent},
+			{Name: "Assets:Saving:HSBC-CN", Kind: account.BankCurrent},
+			{Name: "Assets:Saving:HSBC-US", Kind: account.BankCurrent},
+			{Name: "Assets:Saving:CMBC-HK", Kind: account.BankCurrent},
+			{Name: "Assets:Wallet:Wasabicard:7260", Kind: account.CashEquivalent},
+			{Name: "Assets:Wallet:Wasabicard:Wallet", Kind: account.CashEquivalent},
+		},
+	})
+	defer config.SetConfigForTest(prev)
+	service.ClearInterestCache()
+	service.ClearPriceCache()
+	transaction.ClearCache()
+
+	db := expenseInMemoryDB(t)
+	d := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
+	db.Create(&[]posting.Posting{
+		makeAssetLeg("tx-trans-cn", "Assets:Saving:HSBC-CN", "CNY", 20000, d),
+		makeAssetLeg("tx-trans-cn", "Assets:Saving:CMBC-HK", "CNY", -20000, d),
+		makeAssetLeg("tx-reimb", "Assets:Saving:CMB", "CNY", 3381.15, d.AddDate(0, 0, 18)),
+		makeAssetLeg("tx-wasabi", "Assets:Wallet:Wasabicard:7260", "CNY", -697.30, d.AddDate(0, 0, 25)),
+		makeAssetLeg("tx-cmb-spend", "Assets:Saving:CMB", "CNY", -25710.61, d.AddDate(0, 0, 20)),
+	})
+
+	got := computeExpenseInvestments(db)
+	sum := decimal.Zero
+	for _, p := range got {
+		sum = sum.Add(p.Amount)
+	}
+	assert.True(t, sum.IsZero(),
+		"R5: mydata May 2026 net investment must be 0 (saving + wallet flows only), got %s",
+		sum.String())
+	assert.Empty(t, got,
+		"R5: every leg in mydata's May 2026 is bank/cash kind, expected zero survivors, got %d",
+		len(got))
 }
 
 // TestComputeExpenseSummary_YearlyKey verifies the helper honors the
