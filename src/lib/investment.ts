@@ -7,13 +7,13 @@ import {
   formatFloat,
   type Posting,
   secondName,
-  skipTicks,
   tooltip,
   type InvestmentYearlyCard,
   rem,
   now,
   type Legend
 } from "./utils";
+import { evenlySpacedTickValues } from "./axis_ticks";
 import { generateColorScheme } from "./colors";
 import type dayjs from "dayjs";
 
@@ -125,14 +125,19 @@ export function renderMonthlyInvestmentTimeline(postings: Posting[]): Legend[] {
 
   const z = generateColorScheme(groups);
 
+  // Cap the visible X-axis ticks regardless of timeline length so that
+  // 8+ years of monthly samples don't overlap into an unreadable blob
+  // (issue #64 R4). ~12 labels keeps the year + Q1/Q2/Q3/Q4 cadence
+  // readable while still anchoring start and end.
+  const monthLabels = points.map((p) => p.month as string);
   g.append("g")
     .attr("class", "axis x")
     .attr("transform", "translate(0," + height + ")")
     .call(
       d3
         .axisBottom(x)
-        .ticks(5)
-        .tickFormat(skipTicks(30, x, (d) => d.toString()))
+        .tickValues(evenlySpacedTickValues(monthLabels, 12))
+        .tickFormat((d) => d.toString())
     )
     .selectAll("text")
     .attr("y", 10)
