@@ -75,9 +75,23 @@
   onMount(async () => {
     accountTfIdf.set(await ajax("/api/account/tf_idf"));
     ({ templates } = await ajax("/api/templates"));
-    selectedTemplate = templates[0];
-    saveAsName = selectedTemplate.name;
-    templateEditor = createTemplateEditor(selectedTemplate.content, templateEditorDom);
+    // Defensive: older backends (pre-#71 fix) and any future regressions can
+    // return `null` for an empty template list, which would otherwise crash
+    // on `templates[0]`. Coerce to an array and gate the editor seed on
+    // length so we render a clean empty state when no templates exist.
+    templates = templates || [];
+    if (templates.length > 0) {
+      selectedTemplate = templates[0];
+      saveAsName = selectedTemplate.name;
+      templateEditor = createTemplateEditor(selectedTemplate.content, templateEditorDom);
+    } else {
+      // No templates configured — the user can still drive the new M3-A
+      // importer tab, or create a custom template via the create-modal.
+      // Seed the editor with a hint and an empty saveAsName so the create
+      // flow is the obvious next action.
+      saveAsName = "";
+      templateEditor = createTemplateEditor("", templateEditorDom);
+    }
     previewEditor = createPreviewEditor(preview, previewEditorDom, { readonly: true });
     // For the importer flow we need the list of known accounts to drive the
     // counterpart autocomplete. /api/config already returns them.
@@ -141,8 +155,16 @@
     }
 
     ({ templates } = await ajax("/api/templates", { background: true }));
-    selectedTemplate = templates[0];
-    saveAsName = selectedTemplate.name;
+    templates = templates || [];
+    if (templates.length > 0) {
+      selectedTemplate = templates[0];
+      saveAsName = selectedTemplate.name;
+    } else {
+      // Removed the last remaining template — clear the selection so the UI
+      // falls back to the empty state seeded in onMount.
+      selectedTemplate = undefined;
+      saveAsName = "";
+    }
     toast.toast({
       message: `Removed ${oldName}`,
       type: "is-success"
