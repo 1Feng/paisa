@@ -29,7 +29,12 @@ type Template struct {
 }
 
 func All() []Template {
-	var templates []Template
+	// Initialise as an empty (non-nil) slice. Since PR #46 removed every
+	// builtin .handlebars template, a user with no `import_templates` in
+	// paisa.yaml would hit `var templates []Template` returning nil, which
+	// JSON-encodes as `null` and crashes the frontend (`templates[0]` —
+	// see issue #71). Returning an empty slice keeps the wire shape `[]`.
+	templates := []Template{}
 
 	for _, t := range config.GetConfig().ImportTemplates {
 		template := Template{ID: buildID(t.Name, Custom), Name: t.Name, Content: t.Content, TemplateType: Custom}
