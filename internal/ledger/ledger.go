@@ -626,7 +626,7 @@ func execLedgerCommand(journalPath string, flags []string) ([]*posting.Posting, 
 			}
 
 			lotCurrency := utils.UnQuote(record[LotCommodity])
-			if lotCurrency == config.DefaultCurrency() {
+			if NormalizeCurrency(lotCurrency) == NormalizeCurrency(config.DefaultCurrency()) {
 				amount = lotAmount.Mul(quantity)
 				amountAvailable = true
 			}
@@ -854,7 +854,7 @@ func buildHLedgerPostings(p HLedgerPosting, t HLedgerTransaction, pricesTree map
 		totalAmount := decimal.NewFromFloat(amount.Quantity.Value)
 		totalAmountSet := false
 
-		if amount.Commodity != config.DefaultCurrency() {
+		if NormalizeCurrency(amount.Commodity) != NormalizeCurrency(config.DefaultCurrency()) {
 			if amount.Price.Contents.Quantity.Value != 0 {
 				var unconvertedTotal decimal.Decimal
 				if amount.Price.Tag == "TotalPrice" {
@@ -863,7 +863,7 @@ func buildHLedgerPostings(p HLedgerPosting, t HLedgerTransaction, pricesTree map
 					unconvertedTotal = decimal.NewFromFloat(amount.Price.Contents.Quantity.Value).Mul(decimal.NewFromFloat(amount.Quantity.Value))
 				}
 
-				if amount.Price.Contents.Commodity != config.DefaultCurrency() {
+				if NormalizeCurrency(amount.Price.Contents.Commodity) != NormalizeCurrency(config.DefaultCurrency()) {
 					pr := lookupPrice(pricesTree, amount.Commodity, date)
 					if !pr.Equal(decimal.Zero) {
 						totalAmount = decimal.NewFromFloat(amount.Quantity.Value).Mul(pr)
