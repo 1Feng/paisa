@@ -183,9 +183,7 @@ export function renderAmortizationChart(id: string, a: Amortization): Legend[] {
   svg.selectAll("*").remove();
 
   const margin = { top: rem(20), right: rem(50), bottom: rem(60), left: rem(60) };
-  const container = document.getElementById(id.substring(1));
-  if (!container || !container.parentElement) return [];
-  const width = container.parentElement.clientWidth - margin.left - margin.right;
+  const width = chartWidth(id.substring(1), 1000) - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
 
   const g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
