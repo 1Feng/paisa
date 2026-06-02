@@ -15,6 +15,33 @@ func MinimalConfig(cwd string) {
 	config := `
 journal_path: '%s'
 db_path: '%s'
+
+# Register a commodity for every fund / stock / crypto used in your
+# journal so Paisa can fetch prices. Without a price.provider the
+# holding is valued at cost basis and XIRR shows 0. Uncomment and
+# adjust the names/codes below. See https://paisa.fyi for details.
+#
+# commodities:
+#   - name: HS300            # 场外基金 — 天天基金 (Eastmoney)
+#     type: mutualfund
+#     price:
+#       provider: cn-ttjj
+#       code: "000311"       # 6-digit fund code, keep leading zeros
+#   - name: SPDB             # A 股 — 东方财富
+#     type: stock
+#     price:
+#       provider: cn-eastmoney
+#       code: "600000"
+#   - name: TENCENT          # 港股 / 美股 — Yahoo Finance
+#     type: stock
+#     price:
+#       provider: yahoo
+#       code: 0700.HK
+#   - name: BTC              # 加密货币 — OKX
+#     type: unknown
+#     price:
+#       provider: cn-okx
+#       code: BTC-USDT
 `
 	log.Info("Generating config file: ", configFilePath)
 	journalFilePath := filepath.Join(cwd, "main.ledger")
