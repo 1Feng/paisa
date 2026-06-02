@@ -6,19 +6,19 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="The journal format used by Paisa to capture transactions, metadata, etc.">
+        <meta name="description" content="中国用户的 commodities / 行情 provider 配置示范:基金、A 股、港股 / 美股、加密货币如何接上价格源,避免 XIRR 显示为 0。">
       
       
         <meta name="author" content="Anantha Kumaran">
       
       
-        <link rel="canonical" href="https://paisa.fyi/reference/journal/">
+        <link rel="canonical" href="https://paisa.fyi/getting-started/commodities-cn/">
       
       
-        <link rel="prev" href="../providers/cn-eastmoney/">
+        <link rel="prev" href="../tutorial/">
       
       
-        <link rel="next" href="../allocation-targets/">
+        <link rel="next" href="../../reference/accounts/">
       
       
       <link rel="icon" href="../../images/favicon.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Journal - Paisa</title>
+        <title>中国用户的 commodities 配置示范 🇨🇳 - Paisa</title>
       
     
     
@@ -98,7 +98,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#journal" class="md-skip">
+        <a href="#commodities" class="md-skip">
           Skip to content
         </a>
       
@@ -149,7 +149,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Journal
+              中国用户的 commodities 配置示范 🇨🇳
             
           </span>
         </div>
@@ -273,11 +273,13 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../getting-started/installation/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../installation/" class="md-tabs__link">
           
   
     
@@ -293,13 +295,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../accounts/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../reference/accounts/" class="md-tabs__link">
           
   
     
@@ -453,8 +453,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -467,19 +469,20 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -491,7 +494,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Getting Started
@@ -505,7 +508,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -527,7 +530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/tutorial/" class="md-nav__link">
+      <a href="../tutorial/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -546,10 +549,31 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../getting-started/commodities-cn/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    中国用户的 commodities 配置示范 🇨🇳
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -559,6 +583,71 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#commodity" class="md-nav__link">
+    <span class="md-ellipsis">
+      commodity 配置长什么样
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ticker-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见 ticker → provider 映射
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      可直接复制的示例
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      接好之后
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      延伸阅读
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -575,10 +664,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -623,20 +710,19 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -648,7 +734,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Reference
@@ -662,7 +748,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../accounts/" class="md-nav__link">
+      <a href="../../reference/accounts/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -684,7 +770,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../commodities/" class="md-nav__link">
+      <a href="../../reference/commodities/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -755,7 +841,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../providers/yahoo/" class="md-nav__link">
+      <a href="../../reference/providers/yahoo/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -777,7 +863,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../providers/cn-ttjj/" class="md-nav__link">
+      <a href="../../reference/providers/cn-ttjj/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -799,7 +885,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../providers/cn-eastmoney/" class="md-nav__link">
+      <a href="../../reference/providers/cn-eastmoney/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -826,31 +912,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Journal
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../reference/journal/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -860,104 +925,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#editor" class="md-nav__link">
-    <span class="md-ellipsis">
-      Editor
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#backup" class="md-nav__link">
-    <span class="md-ellipsis">
-      Backup
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#syntax" class="md-nav__link">
-    <span class="md-ellipsis">
-      Syntax
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Syntax">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#transaction" class="md-nav__link">
-    <span class="md-ellipsis">
-      Transaction
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#commodity" class="md-nav__link">
-    <span class="md-ellipsis">
-      Commodity
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#comment" class="md-nav__link">
-    <span class="md-ellipsis">
-      Comment
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tags" class="md-nav__link">
-    <span class="md-ellipsis">
-      Tags
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#include" class="md-nav__link">
-    <span class="md-ellipsis">
-      Include
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -970,7 +937,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../allocation-targets/" class="md-nav__link">
+      <a href="../../reference/allocation-targets/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -992,7 +959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../budget/" class="md-nav__link">
+      <a href="../../reference/budget/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1014,7 +981,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../bulk-edit/" class="md-nav__link">
+      <a href="../../reference/bulk-edit/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1036,7 +1003,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../import/" class="md-nav__link">
+      <a href="../../reference/import/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1058,7 +1025,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../recurring/" class="md-nav__link">
+      <a href="../../reference/recurring/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1080,7 +1047,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../sheets/" class="md-nav__link">
+      <a href="../../reference/sheets/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1110,7 +1077,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../config/" class="md-nav__link">
+      <a href="../../reference/config/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1159,7 +1126,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../goals/" class="md-nav__link ">
+            <a href="../../reference/goals/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1193,7 +1160,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../goals/retirement/" class="md-nav__link">
+      <a href="../../reference/goals/retirement/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1215,7 +1182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../goals/savings/" class="md-nav__link">
+      <a href="../../reference/goals/savings/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1245,7 +1212,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ledger-cli/" class="md-nav__link">
+      <a href="../../reference/ledger-cli/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1267,7 +1234,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../editor/" class="md-nav__link">
+      <a href="../../reference/editor/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1289,7 +1256,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-authentication/" class="md-nav__link">
+      <a href="../../reference/user-authentication/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1311,7 +1278,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../credit-cards/" class="md-nav__link">
+      <a href="../../reference/credit-cards/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1333,7 +1300,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../analysis/" class="md-nav__link">
+      <a href="../../reference/analysis/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1384,7 +1351,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../tax/" class="md-nav__link ">
+            <a href="../../reference/tax/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1418,7 +1385,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tax/tax-harvesting/" class="md-nav__link">
+      <a href="../../reference/tax/tax-harvesting/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1440,7 +1407,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tax/capital-gains/" class="md-nav__link">
+      <a href="../../reference/tax/capital-gains/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1462,7 +1429,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tax/schedule-al/" class="md-nav__link">
+      <a href="../../reference/tax/schedule-al/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1492,7 +1459,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
+      <a href="../../reference/changelog/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1956,80 +1923,47 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#editor" class="md-nav__link">
-    <span class="md-ellipsis">
-      Editor
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#backup" class="md-nav__link">
-    <span class="md-ellipsis">
-      Backup
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#syntax" class="md-nav__link">
-    <span class="md-ellipsis">
-      Syntax
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Syntax">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#transaction" class="md-nav__link">
-    <span class="md-ellipsis">
-      Transaction
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#commodity" class="md-nav__link">
     <span class="md-ellipsis">
-      Commodity
+      commodity 配置长什么样
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#comment" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#ticker-provider" class="md-nav__link">
     <span class="md-ellipsis">
-      Comment
+      常见 ticker → provider 映射
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#tags" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Tags
+      可直接复制的示例
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#include" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      Include
+      接好之后
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      延伸阅读
+    </span>
+  </a>
   
 </li>
       
@@ -2052,79 +1986,147 @@
   
 
 
-<h1 id="journal">Journal<a class="headerlink" href="#journal" title="Permanent link">&para;</a></h1>
-<p>All your transactions are stored in plain text files called
-journal. You can organize your transactions into multiple journal
-files. The <a href="../config/">journal_path</a> configuration refers your main journal
-file. The main journal file can refer other journal files using
-<a href="https://ledger-cli.org/doc/ledger3.html#index-include">include</a> directive. The <code class="language-ledger highlight"><span class="k">include</span></code> directive supports
-wildcards <code>*</code> as well. Transactions are sourced <strong>only</strong> from the main
-journal file and other journal files included from the main journal
-file.</p>
-<div class="language-ledger highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">include</span> <span class="kn">investments.ledger</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">include</span> <span class="kn">expenses/*.ledger</span>
+<h1 id="commodities">中国用户的 commodities 配置示范 <sub><img alt="🇨🇳" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f1e8-1f1f3.svg" title=":flag_cn:" /></sub><a class="headerlink" href="#commodities" title="Permanent link">&para;</a></h1>
+<p>如果你导入了一个真实的账本(基金、A 股、港股 / 美股、加密货币),但
+打开 <code>资产 (Assets)</code> <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></span> <code>净值 (Net Worth)</code>
+后发现 <strong>XIRR 显示 <code>0.00</code></strong>、<code>收益 (Gain)</code> 全部按成本计价、<code>配置
+(Allocation)</code> 看不到真实市值占比,通常<strong>不是 bug</strong>,而是因为你的
+<code>paisa.yaml</code> 里没有给这些 commodity 注册 <code>commodities:</code> +
+<code>price.provider</code>。没有 provider,<code>paisa update</code> 就抓不到任何行情,
+持仓的"市值"等于"成本基础",于是总现金流相加为 0,XIRR 自然算出 0。</p>
+<p>解决办法是为账本里用到的每一个基金 / 股票 / 加密货币,在配置里加上一
+条 commodity,告诉 Paisa <strong>去哪里抓价格</strong>。</p>
+<div class="admonition tip">
+<p class="admonition-title">先确认问题</p>
+<p>更新价格后,可以用下面的命令查看实际抓到了多少条价格。如果返回
+<code>0</code> 或非常少,说明 commodity 还没配好 provider:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:7500/api/price<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.prices | length&#39;</span>
 </span></code></pre></div>
-<h2 id="editor">Editor<a class="headerlink" href="#editor" title="Permanent link">&para;</a></h2>
-<p>Paisa comes with a journal editor. It allows you to edit all the files
-with the same file extension as your main journal and in the same or
-sub directories as your main journal.</p>
-<h2 id="backup">Backup<a class="headerlink" href="#backup" title="Permanent link">&para;</a></h2>
-<p>Paisa tries its best to keep your journal safe. It creates a backup of
-your journal file every time you save it. The backup file is created
-with the same name as your journal file with a <code>.backup.{timestamp}</code>
-extension. You can revert back to old versions of your journal file
-via the editor. You can also delete the backup files from the editor.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>It is recommended to keep your journal files and <code>paisa.yaml</code>
-under version control or other backup mechanism. Paisa's backup
-mechanism is not a replacement for a proper backup. You can ignore
-<code>paisa.db</code> file from your version control system, the data in db
-file can be recreated from your journal files.</p>
 </div>
-<h2 id="syntax">Syntax<a class="headerlink" href="#syntax" title="Permanent link">&para;</a></h2>
-<p>The journal syntax of the features you use normally along with paisa
-is documented here. Refer <a href="https://ledger-cli.org/doc/ledger3.html#Journal-Format">ledger</a> documentation for more details.</p>
-<h5 id="transaction">Transaction<a class="headerlink" href="#transaction" title="Permanent link">&para;</a></h5>
-<div class="language-ledger highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="na">2022/01/01</span> <span class="gh">Salary</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="s">    Income:Salary:Acme</span><span class="err">      </span><span class="m">-100,000</span><span class="err"> </span><span class="k">INR</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="s">    Assets:Checking</span><span class="err">          </span><span class="m">100,000</span><span class="err"> </span><span class="k">INR</span>
+<h2 id="commodity">commodity 配置长什么样<a class="headerlink" href="#commodity" title="Permanent link">&para;</a></h2>
+<p>每条 commodity 由四个字段组成,和 <a href="../../reference/commodities/">Commodities 参考文档</a>
+里完全一致:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">commodities</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HS300</span><span class="w"> </span><span class="c1"># (1)!</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mutualfund</span><span class="w"> </span><span class="c1"># (2)!</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">price</span><span class="p">:</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cn-ttjj</span><span class="w"> </span><span class="c1"># (3)!</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;000311&quot;</span><span class="w"> </span><span class="c1"># (4)!</span>
 </span></code></pre></div>
-<p>A <code>transaction</code> should start with a <code>date</code> followed by
-<code>description</code>. Following that you can have 2 or more <code>postings</code>. The
-posting line should have at least 2 leading spaces. The <code>account</code> name
-and the <code>amount</code> should be separated by at least 2 spaces.</p>
-<h5 id="commodity">Commodity<a class="headerlink" href="#commodity" title="Permanent link">&para;</a></h5>
-<div class="language-ledger highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="na">2022/01/07</span> <span class="gh">Investment</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="s">    Assets:Checking</span><span class="err">         </span><span class="m">-20,000</span><span class="err"> </span><span class="k">INR</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="s">    Assets:Equity:NIFTY</span><span class="err">   </span><span class="m">168.690</span><span class="err"> </span><span class="k">NIFTY</span><span class="err"> </span><span class="o">@</span><span class="err"> </span><span class="m">118.56</span><span class="err"> </span><span class="k">INR</span>
+<ol>
+<li><code>name</code> —— 必须和你 journal 里使用的 commodity 名称完全一致</li>
+<li><code>type</code> —— <code>mutualfund</code>、<code>stock</code> 或 <code>unknown</code></li>
+<li><code>price.provider</code> —— 行情 provider 的代码(见下表)</li>
+<li><code>price.code</code> —— provider 用来定位这只标的的代码</li>
+</ol>
+<h2 id="ticker-provider">常见 ticker → provider 映射<a class="headerlink" href="#ticker-provider" title="Permanent link">&para;</a></h2>
+<p>下表只列出当前代码库里<strong>确实存在</strong>的 provider。</p>
+<table>
+<thead>
+<tr>
+<th>资产类型</th>
+<th>例子</th>
+<th>provider</th>
+<th>type</th>
+<th>price.code 写法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>场内 / 场外基金(天天基金)</td>
+<td>景顺长城沪深 300 增强 A</td>
+<td><code>cn-ttjj</code></td>
+<td><code>mutualfund</code></td>
+<td>6 位基金代码,如 <code>"000311"</code>(保留前导零,用引号)</td>
+</tr>
+<tr>
+<td>A 股</td>
+<td>浦发银行 <code>600000</code></td>
+<td><code>cn-eastmoney</code></td>
+<td><code>stock</code></td>
+<td>A 股代码,如 <code>600000</code>、<code>000001</code>、<code>300750</code>;也可写 <code>市场.代码</code>,如 <code>116.00700</code>、<code>105.AAPL</code></td>
+</tr>
+<tr>
+<td>港股 / 美股</td>
+<td>腾讯 <code>0700.HK</code>、Uber <code>UBER</code></td>
+<td><code>yahoo</code></td>
+<td><code>stock</code></td>
+<td>Yahoo Finance ticker,如 <code>0700.HK</code>、<code>1810.HK</code>、<code>AAPL</code>、<code>UBER</code>、<code>BABA</code></td>
+</tr>
+<tr>
+<td>加密货币</td>
+<td>比特币</td>
+<td><code>cn-okx</code></td>
+<td><code>unknown</code></td>
+<td>OKX instrument id,如 <code>BTC-USDT</code>、<code>ETH-USDT</code>、<code>BTC-USD</code></td>
+</tr>
+</tbody>
+</table>
+<p>外汇(把外币持仓折算回本币)由 FX 层处理,默认使用 <code>cn-boc</code>(中国
+银行经 frankfurter.app)和 <code>yahoo-fx</code>,通常无需手动为每只标的配置。</p>
+<h2 id="_1">可直接复制的示例<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>下面是一份覆盖四类资产的完整 <code>commodities:</code> 配置示范。把 <code>name</code> 改成
+你 journal 里实际用到的 commodity 名,把 <code>code</code> 改成你的标的代码即可。</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">commodities</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="c1"># 场外基金 —— 天天基金 (Eastmoney) 历史净值</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HS300</span><span class="w"> </span><span class="c1"># 景顺长城沪深 300 增强 A</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mutualfund</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">price</span><span class="p">:</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cn-ttjj</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;000311&quot;</span><span class="w"> </span><span class="c1"># 6 位基金代码,保留前导零</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="c1"># A 股 —— 东方财富</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPDB</span><span class="w"> </span><span class="c1"># 浦发银行</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stock</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="nt">price</span><span class="p">:</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cn-eastmoney</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">        </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;600000&quot;</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span><span class="c1"># 港股 —— Yahoo Finance</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TENCENT</span><span class="w"> </span><span class="c1"># 腾讯控股</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stock</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="nt">price</span><span class="p">:</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yahoo</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">        </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0700.HK</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">  </span><span class="c1"># 美股 —— Yahoo Finance</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">UBER</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stock</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">    </span><span class="nt">price</span><span class="p">:</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">yahoo</span>
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="w">        </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">UBER</span>
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>
+</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="w">  </span><span class="c1"># 加密货币 —— OKX</span>
+</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BTC</span>
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unknown</span>
+</span><span id="__span-2-33"><a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a><span class="w">    </span><span class="nt">price</span><span class="p">:</span>
+</span><span id="__span-2-34"><a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cn-okx</span>
+</span><span id="__span-2-35"><a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span class="w">        </span><span class="nt">code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BTC-USDT</span>
 </span></code></pre></div>
-<p><code>commodity</code> cost can be specified using the <code>@</code> syntax. Here <code>118.56</code>
-is the per unit cost and <code>168.690</code> is the quantity you have bought.</p>
-<h5 id="comment">Comment<a class="headerlink" href="#comment" title="Permanent link">&para;</a></h5>
-<div class="language-ledger highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="na">2023/07/01</span> <span class="gh">Rent</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="err">    </span><span class="c1">; This is a transaction comment</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="s">    Expenses:Rent</span><span class="err">             </span><span class="m">15,000</span><span class="err"> </span><span class="k">INR</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="s">    Assets:Checking</span><span class="err">   </span><span class="c1">; This is a posting comment</span>
-</span></code></pre></div>
-<p>Any text after <code>;</code> is treated as a comment. Comment can be at whole
-transaction level or individual posting level. Comment is also referred
-as <strong>note</strong> in many places, both are same.</p>
-<h5 id="tags">Tags<a class="headerlink" href="#tags" title="Permanent link">&para;</a></h5>
-<div class="language-ledger highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="na">2023/07/01</span> <span class="gh">Rent</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="err">    </span><span class="c1">; Recurring: Rent</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="s">    Expenses:Rent</span><span class="err">             </span><span class="m">15,000</span><span class="err"> </span><span class="k">INR</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="s">    Assets:Checking</span>
-</span></code></pre></div>
-<p>Transactions can be tagged with extra metadata called tags. Tag has
-two parts: tag name and value. In the above example, <code>Recurring</code> is
-the name and <code>Rent</code> is the value. Tag should be inside comment.</p>
-<h5 id="include">Include<a class="headerlink" href="#include" title="Permanent link">&para;</a></h5>
-<div class="language-ledger highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">include</span> <span class="kn">investments.ledger</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">include</span> <span class="kn">expenses/*.ledger</span>
-</span></code></pre></div>
-<p>Include directive can be used to include other journal files. It
-supports wildcards <code>*</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">加密货币的计价货币</p>
+<p>OKX 返回的价格以该 instrument 的报价货币计(通常是 <code>USDT</code> 或
+<code>USD</code>)。折算到你的 <code>default_currency</code> 由 FX 层完成,所以需要保证
+报价货币到默认货币之间有可用的汇率。详见
+<a href="../../reference/providers/cn-okx/">OKX provider 参考</a>。</p>
+</div>
+<h2 id="_2">接好之后<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>保存配置后,从右上角下拉菜单点击 <code>更新价格 (Update Prices)</code>,或在命令行
+   运行 <code>paisa update</code>。</li>
+<li>再次运行上面的 <code>curl ... | jq '.prices | length'</code>,数字应该明显大于 0。</li>
+<li>回到 <code>资产 (Assets)</code> <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></span> <code>余额 (Balance)</code>
+   查看最新市值,在 <code>账本 (Ledger)</code> <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></span>
+   <code>价格 (Price)</code> 查看完整的历史价格曲线,XIRR / Gain / Allocation
+   也会随之恢复正常。</li>
+</ol>
+<h2 id="_3">延伸阅读<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../reference/commodities/">Commodities 参考文档</a> —— 全部 provider 与字段说明</li>
+<li><a href="../../reference/providers/cn-ttjj/">天天基金 (Eastmoney) provider</a></li>
+<li><a href="../../reference/providers/cn-eastmoney/">东方财富 (Eastmoney) provider</a></li>
+<li><a href="../../reference/providers/yahoo/">Yahoo Finance provider</a></li>
+</ul>
 
 
 
@@ -2173,7 +2175,7 @@ supports wildcards <code>*</code>.</p>
               
                 
               
-              Thanks for your feedback! Help us improve this page by using our <a href="https://docs.google.com/forms/d/e/1FAIpQLSejpTiljuhsviEvXFBN-Z5rJZ_dkXHV5RaZzqpyCAZF1nIFiQ/viewform?usp=pp_url&entry.1125403938=/reference/journal/" target="_blank" rel="noopener">feedback form</a>.
+              Thanks for your feedback! Help us improve this page by using our <a href="https://docs.google.com/forms/d/e/1FAIpQLSejpTiljuhsviEvXFBN-Z5rJZ_dkXHV5RaZzqpyCAZF1nIFiQ/viewform?usp=pp_url&entry.1125403938=/getting-started/commodities-cn/" target="_blank" rel="noopener">feedback form</a>.
             </div>
           
         </div>
@@ -2207,7 +2209,7 @@ supports wildcards <code>*</code>.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../providers/cn-eastmoney/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Eastmoney A-Share 🇨🇳">
+          <a href="../tutorial/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Tutorial">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -2217,20 +2219,20 @@ supports wildcards <code>*</code>.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Eastmoney A-Share 🇨🇳
+                Tutorial
               </div>
             </div>
           </a>
         
         
           
-          <a href="../allocation-targets/" class="md-footer__link md-footer__link--next" aria-label="Next: Allocation Targets">
+          <a href="../../reference/accounts/" class="md-footer__link md-footer__link--next" aria-label="Next: Accounts">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Allocation Targets
+                Accounts
               </div>
             </div>
             <div class="md-footer__button md-icon">
