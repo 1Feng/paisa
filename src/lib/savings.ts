@@ -3,6 +3,7 @@ import { Delaunay } from "d3";
 import _, { first, last, takeRight } from "lodash";
 import tippy, { type Placement } from "tippy.js";
 import COLORS from "./colors";
+import { chartWidth } from "$lib/chart_width";
 import {
   formatCurrency,
   formatCurrencyCrude,
@@ -26,7 +27,7 @@ export function renderProgress(
 
   const svg = d3.select(element),
     margin = { top: rem(40), right: rem(80), bottom: rem(20), left: rem(40) },
-    width = Math.max(element.parentElement.clientWidth, 1000) - margin.left - margin.right,
+    width = chartWidth(element, 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

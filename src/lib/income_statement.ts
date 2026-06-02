@@ -8,6 +8,7 @@ import {
   firstNames
 } from "./utils";
 import COLORS from "./colors";
+import { chartWidth } from "$lib/chart_width";
 import _ from "lodash";
 import { iconGlyph, iconify } from "./icon";
 import { pathArrows } from "d3-path-arrows";
@@ -18,7 +19,7 @@ export function renderIncomeStatement(element: Element) {
 
   const svg = d3.select(element),
     margin = { top: rem(20), right: rem(20), bottom: rem(10), left: rem(110) },
-    width = Math.max(element.parentElement.clientWidth, 600) - margin.left - margin.right,
+    width = chartWidth(element, 600) - margin.left - margin.right,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   const height = BAR_HEIGHT * BARS;

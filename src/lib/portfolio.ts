@@ -13,6 +13,7 @@ import {
   type Legend,
   darkenOrLighten
 } from "./utils";
+import { chartWidth } from "$lib/chart_width";
 
 export function filterCommodityBreakdowns(
   portfolioAggregates: PortfolioAggregate[],
@@ -56,11 +57,7 @@ export function renderPortfolioBreakdown(
   const BAR_HEIGHT = rem(25);
   const svg = d3.select(id),
     margin = { top: rem(20), right: 0, bottom: rem(10), left: rem(20) },
-    fullWidth =
-      Math.max(
-        document.getElementById(id.substring(1)).parentElement.clientWidth,
-        small ? 320 : 800
-      ) - 2,
+    fullWidth = chartWidth(id.substring(1), small ? 320 : 800) - 2,
     width = fullWidth - margin.left - margin.right,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

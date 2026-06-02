@@ -20,6 +20,7 @@ import {
 import dayjs from "dayjs";
 import * as financial from "financial";
 import { iconify } from "./icon";
+import { chartWidth } from "$lib/chart_width";
 
 const WHEN = financial.PaymentDueTime.Begin;
 
@@ -170,7 +171,7 @@ export function renderProgress(
 
   const svg = d3.select(element),
     margin = { top: rem(40), right: rem(80), bottom: rem(20), left: rem(40) },
-    width = Math.max(element.parentElement.clientWidth, 1000) - margin.left - margin.right,
+    width = chartWidth(element, 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -302,7 +303,7 @@ export function renderInvestmentTimeline(postings: Posting[], element: Element, 
   const MAX_BAR_WIDTH = 40;
   const svg = d3.select(element),
     margin = { top: 10, right: 50, bottom: 50, left: 40 },
-    width = element.parentElement.clientWidth - margin.left - margin.right,
+    width = chartWidth(element, 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

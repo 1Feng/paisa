@@ -16,6 +16,7 @@ import {
   darkenOrLighten
 } from "./utils";
 import COLORS, { generateColorScheme } from "./colors";
+import { chartWidth } from "$lib/chart_width";
 import chroma from "chroma-js";
 import { ALLOCATION_ROOT, allocationNodeLabel, timelineGroupLabel } from "./allocation_label";
 import { fitTreemapLabel } from "./treemap_label";
@@ -47,7 +48,7 @@ export function renderAllocationTarget(
   const BAR_HEIGHT = rem(25);
   const svg = d3.select(id),
     margin = { top: rem(20), right: rem(20), bottom: rem(10), left: rem(150) },
-    fullWidth = Math.max(document.getElementById(id.substring(1)).parentElement.clientWidth, 1000),
+    fullWidth = chartWidth(id.substring(1), 1000),
     width = fullWidth - margin.left - margin.right,
     height = allocationTargets.length * BAR_HEIGHT * 2,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -264,7 +265,7 @@ function renderPartition(
 
   const div = d3.select(element),
     margin = options.margin,
-    width = element.parentElement.clientWidth - margin.left - margin.right,
+    width = chartWidth(element, 1000) - margin.left - margin.right,
     height = +div.style("height").replace("px", "") - margin.top - margin.bottom;
 
   const percent = (d: d3.HierarchyNode<Aggregate>) => {
@@ -389,10 +390,7 @@ export function renderAllocationTimeline(
 
   const svg = d3.select("#d3-allocation-timeline"),
     margin = { top: 40, right: 60, bottom: 20, left: 35 },
-    width =
-      document.getElementById("d3-allocation-timeline").parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth("d3-allocation-timeline", 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

@@ -6,6 +6,7 @@ import _ from "lodash";
 import tippy from "tippy.js";
 import COLORS from "./colors";
 import { computeLeftMargin } from "./gain_margin";
+import { chartWidth } from "$lib/chart_width";
 import {
   formatCurrency,
   formatCurrencyCrude,
@@ -48,10 +49,7 @@ export function renderOverview(gains: Gain[]) {
       bottom: rem(10),
       left: rem(computeLeftMargin(labels, 150))
     },
-    width =
-      Math.max(document.getElementById(id.substring(1)).parentElement.clientWidth, 1000) -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     height = gains.length * BAR_HEIGHT * 2,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   svg.attr("height", height + margin.top + margin.bottom);
@@ -333,7 +331,7 @@ export function renderAccountOverview(points: Networth[], postings: Posting[], i
 
   const svg = d3.select(element),
     margin = { top: 5, right: 50, bottom: 20, left: 40 },
-    width = element.parentElement.clientWidth - margin.left - margin.right,
+    width = chartWidth(element, 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

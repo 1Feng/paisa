@@ -19,6 +19,7 @@ import {
 import COLORS, { generateColorScheme } from "$lib/colors";
 import type { Writable } from "svelte/store";
 import { iconify } from "$lib/icon";
+import { chartWidth } from "$lib/chart_width";
 import { byExpenseGroup, expenseGroup, pieData } from "$lib/expense";
 import type { Dayjs } from "dayjs";
 
@@ -161,10 +162,7 @@ export function renderYearlyExpensesTimeline(
   const MAX_BAR_WIDTH = 40;
   const svg = d3.select(id),
     margin = { top: 15, right: 30, bottom: 60, left: 40 },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -358,10 +356,7 @@ export function renderCurrentExpensesBreakdown(z: d3.ScaleOrdinal<string, string
   const BAR_HEIGHT = 20;
   const svg = d3.select(id),
     margin = { top: 0, right: 160, bottom: 20, left: 100 },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   const x = d3.scaleLinear().range([0, width]);
