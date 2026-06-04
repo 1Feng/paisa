@@ -3,6 +3,7 @@ import { Delaunay } from "d3";
 import _ from "lodash";
 import tippy from "tippy.js";
 import COLORS from "./colors";
+import { chartWidth } from "$lib/chart_width";
 import {
   formatCurrency,
   formatCurrencyCrude,
@@ -35,7 +36,7 @@ export function renderNetworth(
 
   const right = isMobile() ? 10 : 80,
     margin = { top: 15, right: right, bottom: 20, left: 40 },
-    width = Math.max(element.parentElement.clientWidth, 800) - margin.left - margin.right,
+    width = chartWidth(element, 800) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

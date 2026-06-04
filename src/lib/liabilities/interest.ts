@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import type dayjs from "dayjs";
 import _ from "lodash";
 import COLORS from "$lib/colors";
+import { chartWidth } from "$lib/chart_width";
 import {
   formatCurrency,
   formatCurrencyCrude,
@@ -66,10 +67,7 @@ export function renderOverview(gains: Interest[]) {
   const id = "#d3-interest-overview";
   const svg = d3.select(id),
     margin = { top: rem(5), right: rem(20), bottom: rem(30), left: rem(150) },
-    width =
-      Math.max(document.getElementById(id.substring(1)).parentElement.clientWidth, 850) -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 850) - margin.left - margin.right,
     height = gains.length * BAR_HEIGHT * 2,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   svg.attr("height", height + margin.top + margin.bottom);
@@ -393,7 +391,7 @@ function renderOverviewSmall(
 ) {
   const svg = d3.select(element),
     margin = { top: 5, right: 80, bottom: 20, left: 40 },
-    width = Math.max(element.parentElement.clientWidth, 800) - margin.left - margin.right,
+    width = chartWidth(element, 800) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

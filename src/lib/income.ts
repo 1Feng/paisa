@@ -14,6 +14,7 @@ import {
   type Legend
 } from "./utils";
 import { generateColorScheme } from "./colors";
+import { chartWidth } from "$lib/chart_width";
 
 export function renderMonthlyInvestmentTimeline(incomes: Income[]): Legend[] {
   return renderIncomeTimeline(incomes, "#d3-income-timeline", "MMM-YYYY");
@@ -23,10 +24,7 @@ function renderIncomeTimeline(incomes: Income[], id: string, timeFormat: string)
   const MAX_BAR_WIDTH = 40;
   const svg = d3.select(id),
     margin = { top: 20, right: 30, bottom: 80, left: 40 },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -185,10 +183,7 @@ export function renderYearlyIncomeTimeline(yearlyCards: IncomeYearlyCard[]): Leg
   const BAR_HEIGHT = 20;
   const svg = d3.select(id),
     margin = { top: 15, right: 20, bottom: 20, left: 70 },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   const groups = _.chain(yearlyCards)
@@ -315,10 +310,7 @@ export function renderYearlyTimelineOf(
   const BAR_HEIGHT = 20;
   const svg = d3.select(id),
     margin = { top: 15, right: 20, bottom: 20, left: 70 },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   const colorKeys = [label];

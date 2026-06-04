@@ -14,6 +14,7 @@ import {
 } from "./utils";
 import { generateColorScheme } from "./colors";
 import { iconify } from "./icon";
+import { chartWidth } from "$lib/chart_width";
 import type dayjs from "dayjs";
 
 export interface AmortizationMonth {
@@ -51,10 +52,7 @@ export function renderMonthlyRepaymentTimeline(postings: Posting[]): Legend[] {
   const MAX_BAR_WIDTH = rem(40);
   const svg = d3.select(id),
     margin = { top: rem(20), right: rem(30), bottom: rem(60), left: rem(40) },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -185,9 +183,7 @@ export function renderAmortizationChart(id: string, a: Amortization): Legend[] {
   svg.selectAll("*").remove();
 
   const margin = { top: rem(20), right: rem(50), bottom: rem(60), left: rem(60) };
-  const container = document.getElementById(id.substring(1));
-  if (!container || !container.parentElement) return [];
-  const width = container.parentElement.clientWidth - margin.left - margin.right;
+  const width = chartWidth(id.substring(1), 1000) - margin.left - margin.right;
   const height = +svg.attr("height") - margin.top - margin.bottom;
 
   const g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");

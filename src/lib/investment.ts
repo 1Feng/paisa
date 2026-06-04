@@ -14,6 +14,7 @@ import {
   type Legend
 } from "./utils";
 import { evenlySpacedTickValues } from "./axis_ticks";
+import { chartWidth } from "$lib/chart_width";
 import { generateColorScheme } from "./colors";
 import type dayjs from "dayjs";
 
@@ -29,10 +30,7 @@ export function renderMonthlyInvestmentTimeline(postings: Posting[]): Legend[] {
   const MAX_BAR_WIDTH = rem(40);
   const svg = d3.select(id),
     margin = { top: rem(15), right: rem(30), bottom: rem(60), left: rem(40) },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -207,10 +205,7 @@ export function renderYearlyInvestmentTimeline(yearlyCards: InvestmentYearlyCard
   const BAR_HEIGHT = rem(20);
   const svg = d3.select(id),
     margin = { top: rem(15), right: rem(20), bottom: rem(20), left: rem(70) },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   const groups = _.chain(yearlyCards)

@@ -18,6 +18,7 @@ import { firstName } from "$lib/utils";
 import { tooltip } from "$lib/utils";
 import { formatCurrency } from "$lib/utils";
 import { iconify } from "$lib/icon";
+import { chartWidth } from "$lib/chart_width";
 import { willClearTippy } from "../store";
 import COLORS, { generateColorScheme } from "./colors";
 import textures from "textures";
@@ -38,10 +39,7 @@ export function renderMonthlyFlow(
       bottom: options.rotate ? rem(50) : rem(20),
       left: rem(40)
     },
-    width =
-      document.getElementById(id.substring(1)).parentElement.clientWidth -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -275,10 +273,7 @@ export function renderFlow(graph: Graph) {
   const id = "#d3-expense-flow";
   const svg = d3.select(id);
   const margin = { top: rem(60), right: rem(20), bottom: rem(40), left: rem(20) },
-    width =
-      Math.max(document.getElementById(id.substring(1)).parentElement.clientWidth, 1000) -
-      margin.left -
-      margin.right,
+    width = chartWidth(id.substring(1), 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom;
 
   willClearTippy.update((n) => n + 1);

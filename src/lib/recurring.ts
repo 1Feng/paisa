@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import _ from "lodash";
 import { skipTicks, type TransactionSequence } from "./utils";
 import { scheduleIcon } from "./transaction_sequence";
+import { chartWidth } from "$lib/chart_width";
 
 export function renderRecurring(
   element: Element,
@@ -11,7 +12,7 @@ export function renderRecurring(
 ) {
   const svg = d3.select(element).select("svg"),
     margin = { top: 20, right: 40, bottom: 20, left: 30 },
-    width = element.parentElement.clientWidth - margin.left - margin.right,
+    width = chartWidth(element, 1000) - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
     g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
