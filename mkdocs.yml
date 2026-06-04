@@ -9,6 +9,7 @@ nav:
   - 'Getting Started':
     - getting-started/installation.md
     - getting-started/tutorial.md
+    - getting-started/commodities-cn.md
   - 'Reference':
     - reference/accounts.md
     - reference/commodities.md
