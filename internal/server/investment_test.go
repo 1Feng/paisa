@@ -2,6 +2,7 @@ package server
 
 import (
 	"testing"
+	"time"
 
 	"github.com/ananthakumaran/paisa/internal/model/account"
 	"github.com/ananthakumaran/paisa/internal/model/posting"
@@ -127,5 +128,47 @@ func TestIsInvestmentKind_Whitelist(t *testing.T) {
 	}
 	for _, k := range nonInvestmentKinds {
 		assert.False(t, isInvestmentKind(k), "%s should NOT count as investment", k)
+	}
+}
+
+// Exercise the annual cards, including the complementary other-income bucket.
+// Payroll is employment income; lookalike account names must remain other income.
+func TestInvestmentYearlyCardPayrollIncome(t *testing.T) {
+	date := time.Date(2020, 1, 15, 0, 0, 0, 0, time.UTC)
+	assets := []posting.Posting{{Date: date, Account: "Assets:Brokerage:Test", Amount: decimal.NewFromInt(100)}}
+	tests := []struct {
+		account string
+		salary  bool
+	}{
+		{"Income:Payroll", true},
+		{"Income:Payroll:Salary", true},
+		{"Income:Payroll:Bonus", true},
+		{"Income:Payroll:Fund", true},
+		{"Income:Payroll:Reimbursement", true},
+		{"Income:Salary", true},
+		{"Income:Salary:Employer", true},
+		{"Income:PayrollOther", false},
+		{"Income:SalaryOther", false},
+		{"Income:Bank:Interest", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.account, func(t *testing.T) {
+			incomes := []posting.Posting{
+				{Date: date, Account: tt.account, Amount: decimal.NewFromInt(-1000)},
+				{Date: date, Account: "Income:Investment:Dividend", Amount: decimal.NewFromInt(-50)},
+			}
+			expenses := []posting.Posting{{Date: date, Account: "Expenses:Tax:PI", Amount: decimal.NewFromInt(100)}}
+			cards := computeInvestmentYearlyCard(date, assets, expenses, incomes)
+			if len(cards) == 0 {
+				t.Fatal("expected an annual investment card")
+			}
+			salary, other := int64(0), int64(1050)
+			if tt.salary {
+				salary, other = 1000, 50
+			}
+			assert.True(t, cards[0].GrossSalaryIncome.Equal(decimal.NewFromInt(salary)), "salary: %s", cards[0].GrossSalaryIncome)
+			assert.True(t, cards[0].GrossOtherIncome.Equal(decimal.NewFromInt(other)), "other: %s", cards[0].GrossOtherIncome)
+			assert.True(t, cards[0].NetIncome.Equal(decimal.NewFromInt(950)), "net income must not change")
+		})
 	}
 }

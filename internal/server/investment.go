@@ -1,7 +1,6 @@
 package server
 
 import (
-	"strings"
 	"time"
 
 	"github.com/ananthakumaran/paisa/internal/accounting"
@@ -114,6 +113,12 @@ func filterOutNonInvestmentKinds(postings []posting.Posting, accounts []account.
 	})
 }
 
+// isSalaryIncome includes employment income recorded under either supported
+// account tree, matching whole account segments rather than lookalike prefixes.
+func isSalaryIncome(account string) bool {
+	return utils.IsSameOrParent(account, "Income:Salary") || utils.IsSameOrParent(account, "Income:Payroll")
+}
+
 func computeInvestmentYearlyCard(start time.Time, assets []posting.Posting, expenses []posting.Posting, incomes []posting.Posting) []InvestmentYearlyCard {
 	var yearlyCards []InvestmentYearlyCard = make([]InvestmentYearlyCard, 0)
 
@@ -153,14 +158,14 @@ func computeInvestmentYearlyCard(start time.Time, assets []posting.Posting, expe
 		}
 
 		grossSalaryIncome := utils.SumBy(currentYearIncomes, func(p posting.Posting) decimal.Decimal {
-			if strings.HasPrefix(p.Account, "Income:Salary") {
+			if isSalaryIncome(p.Account) {
 				return p.Amount.Neg()
 			} else {
 				return decimal.Zero
 			}
 		})
 		grossOtherIncome := utils.SumBy(currentYearIncomes, func(p posting.Posting) decimal.Decimal {
-			if !strings.HasPrefix(p.Account, "Income:Salary") {
+			if !isSalaryIncome(p.Account) {
 				return p.Amount.Neg()
 			} else {
 				return decimal.Zero
