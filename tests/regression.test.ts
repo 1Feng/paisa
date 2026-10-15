@@ -4,7 +4,7 @@ import { describe, expect, test } from "bun:test";
 import waitPort from "wait-port";
 import fs from "fs";
 import axios from "axios";
-import { diffString } from "json-diff";
+import { verifySnapshot } from "./snapshot";
 
 const fixture = "tests/fixture";
 const port = 5700;
@@ -21,17 +21,7 @@ async function recordAndVerify(dir: string, route: string, name: string) {
   const { data: data } = await axios.get(route);
 
   const filename = path.join(dir, name + ".json");
-  if (fs.existsSync(filename) && process.env["REGENERATE"] !== "true") {
-    const current = JSON.parse(fs.readFileSync(filename).toString());
-    const diff = diffString(data, current, {
-      excludeKeys: ["id", "transaction_id", "endLine", "transaction_end_line"]
-    });
-
-    if (diff != "") {
-      expect().fail(diff);
-    }
-  }
-  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+  verifySnapshot(filename, data, process.env["REGENERATE"] === "true");
 }
 
 async function verifyApi(dir: string) {
