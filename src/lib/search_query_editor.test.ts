@@ -1,4 +1,6 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import dayjs from "dayjs";
+import "./format";
 import { parseDate } from "./search_query_editor";
 
 function assertRange(text: string, start: string, end: string) {
@@ -7,8 +9,18 @@ function assertRange(text: string, start: string, end: string) {
   expect(result.end.format("YYYY-MM-DDTHH:mm:ss")).toEqual(end);
 }
 
-const reference = new Date("2023-09-03");
+const reference = new Date(2023, 8, 3);
+let previousLocale: string;
+beforeEach(() => {
+  previousLocale = dayjs.locale();
+  dayjs.locale("en");
+});
+afterEach(() => dayjs.locale(previousLocale));
 describe("parseDate", () => {
+  test("configured Monday week-start is honoured", () => {
+    dayjs.locale("zh-cn");
+    assertRange("last week", "2023-08-21T00:00:00", "2023-08-27T23:59:59");
+  });
   test("natural language", () => {
     assertRange("today", "2023-09-03T00:00:00", "2023-09-03T23:59:59");
     assertRange("this month", "2023-09-01T00:00:00", "2023-09-30T23:59:59");
