@@ -1,4 +1,3 @@
-import { expenseStackDomain } from "./stack_domain";
 import * as d3 from "d3";
 import type { Dayjs } from "dayjs";
 import chroma from "chroma-js";
@@ -97,7 +96,7 @@ export function renderCalendar(
     )
     .text((d) => {
       const total = expensesByDayTotal[d.format("YYYY-MM-DD")];
-      if (total !== 0) {
+      if (total > 0) {
         return formatCurrencyCrude(total);
       }
       return "";
@@ -235,7 +234,7 @@ export function renderMonthlyExpensesTimeline(
       return tooltip(
         _.flatMap(allowedGroups, (key) => {
           const total = (d.data as any)[key];
-          if (total !== 0) {
+          if (total > 0) {
             grandTotal += total;
             return [
               [
@@ -278,11 +277,9 @@ export function renderMonthlyExpensesTimeline(
       points,
       (p) => p.timestamp.isSameOrBefore(dateRange.to) && p.timestamp.isSameOrAfter(dateRange.from)
     );
-    const stacked = d3.stack().offset(d3.stackOffsetDiverging).keys(allowedGroups)(
-      allowedPoints as { [key: string]: number }[]
-    );
+    const sum = (p: Point) => _.sum(_.map(allowedGroups, (k) => p[k]));
     x.domain(allowedPoints.map((p) => p.month));
-    y.domain(expenseStackDomain(stacked));
+    y.domain([0, d3.max(allowedPoints, sum)]);
 
     const t = svg.transition().duration(firstRender ? 0 : 750);
     firstRender = false;
@@ -323,7 +320,12 @@ export function renderMonthlyExpensesTimeline(
 
     bars
       .selectAll("g")
-      .data(stacked, (d: any) => d.key)
+      .data(
+        d3.stack().offset(d3.stackOffsetDiverging).keys(allowedGroups)(
+          allowedPoints as { [key: string]: number }[]
+        ),
+        (d: any) => d.key
+      )
       .join(
         (enter) =>
           enter.append("g").attr("fill", function (d) {

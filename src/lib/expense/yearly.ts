@@ -1,4 +1,3 @@
-import { expenseStackDomain } from "./stack_domain";
 import * as d3 from "d3";
 import chroma from "chroma-js";
 import _ from "lodash";
@@ -120,7 +119,7 @@ export function renderCalendar(
     .style("color", (d) => chroma(COLORS.lossText).alpha(alpha(expensesByMonthTotal[d])).hex())
     .text((d) => {
       const total = expensesByMonthTotal[d];
-      if (total !== 0) {
+      if (total > 0) {
         return formatCurrencyCrudeWithPrecision(total, 1);
       }
       return "";
@@ -219,7 +218,7 @@ export function renderYearlyExpensesTimeline(
       return tooltip(
         _.flatMap(allowedGroups, (key) => {
           const total = (d.data as any)[key];
-          if (total !== 0) {
+          if (total > 0) {
             grandTotal += total;
             return [
               [
@@ -245,11 +244,9 @@ export function renderYearlyExpensesTimeline(
 
   const render = (allowedGroups: string[]) => {
     groupsStore.set(allowedGroups);
-    const stacked = d3.stack().offset(d3.stackOffsetDiverging).keys(allowedGroups)(
-      points as { [key: string]: number }[]
-    );
+    const sum = (p: Point) => _.sum(_.map(allowedGroups, (k) => p[k]));
     x.domain(points.map((p) => p.year));
-    y.domain(expenseStackDomain(stacked));
+    y.domain([0, d3.max(points, sum)]);
 
     const t = svg.transition().duration(750);
     xAxis
@@ -272,7 +269,12 @@ export function renderYearlyExpensesTimeline(
 
     bars
       .selectAll("g")
-      .data(stacked, (d: any) => d.key)
+      .data(
+        d3.stack().offset(d3.stackOffsetDiverging).keys(allowedGroups)(
+          points as { [key: string]: number }[]
+        ),
+        (d: any) => d.key
+      )
       .join(
         (enter) =>
           enter.append("g").attr("fill", function (d) {
