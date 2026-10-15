@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import dayjs from "dayjs";
+import localeData from "dayjs/plugin/localeData";
+dayjs.extend(localeData);
 // Imports come from ./format directly because ./utils transitively pulls
 // in `$app/navigation`, which only resolves through Vite/SvelteKit. The
 // app-level surface (which the rest of the codebase imports from $lib/utils)
@@ -34,14 +36,24 @@ function setConfig(overrides: ConfigOverrides = {}) {
   } as any;
 }
 
+let previousConfig: typeof globalThis.USER_CONFIG;
+let previousLocale: string;
+let previousWeekStarts: Record<string, number>;
 beforeEach(() => {
+  previousConfig = globalThis.USER_CONFIG;
+  previousLocale = dayjs.locale();
+  previousWeekStarts = Object.fromEntries(
+    ["en", "zh-cn"].map((locale) => [locale, dayjs().locale(locale).localeData().firstDayOfWeek()])
+  );
   setConfig();
 });
 
 afterEach(() => {
-  // Restore zh-cn defaults so unrelated tests don't see stale state.
-  setConfig();
-  configUpdated();
+  globalThis.USER_CONFIG = previousConfig;
+  for (const [locale, weekStart] of Object.entries(previousWeekStarts)) {
+    dayjs.updateLocale(locale, { weekStart });
+  }
+  dayjs.locale(previousLocale);
 });
 
 describe("formatCurrency (default zh-CN + CNY)", () => {
