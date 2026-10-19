@@ -114,3 +114,34 @@ func TestJournalPricesInvalidCurrencyRateIsUnavailable(t *testing.T) {
 		require.True(t, rows[0].Available(), "ticker alone must not identify an FX node")
 	}
 }
+
+func TestJournalPricesInvalidCrossCurrencyRateIsUnavailable(t *testing.T) {
+	for _, name := range []string{"USD", "$"} {
+		for _, value := range []string{"0", "-2"} {
+			t.Run(name+"/"+value, func(t *testing.T) {
+				rows, err := parseLedgerPrices("P 2024/01/01 00:00:00 "+name+" "+value+" HKD\n"+
+					"P 2024/01/01 00:00:00 HKD 1 CNY\n"+
+					"P 2024/01/02 00:00:00 HKD 2 CNY\n"+
+					"P 2024/01/03 00:00:00 "+name+" 8 HKD\n", "CNY")
+				require.NoError(t, err)
+				for _, day := range []string{"2024-01-01", "2024-01-02"} {
+					p := journalPrice(t, rows, name, day)
+					require.False(t, p.Available())
+					require.True(t, p.Value.IsZero())
+					require.Equal(t, "missing_fx", p.Conversion.Status)
+					require.Equal(t, value, p.Conversion.QuoteValue.String())
+				}
+				p := journalPrice(t, rows, name, "2024-01-03")
+				require.True(t, p.Available())
+				require.Equal(t, "16", p.Value.String())
+			})
+		}
+	}
+	for _, name := range []string{"TEST", "AMD"} {
+		rows, err := parseLedgerPrices("P 2024/01/01 00:00:00 "+name+" 0 HKD\nP 2024/01/01 00:00:00 HKD 1 CNY\n", "CNY")
+		require.NoError(t, err)
+		p := journalPrice(t, rows, name, "2024-01-01")
+		require.True(t, p.Available(), "zero security quote must remain available")
+		require.True(t, p.Value.IsZero())
+	}
+}

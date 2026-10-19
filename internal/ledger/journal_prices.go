@@ -194,6 +194,11 @@ func convertJournalPrices(output, defaultCurrency string) ([]price.Price, error)
 			}
 			p := makePrice(q, day)
 			rate, legs, ok := book.lookup(q.currency, base, day)
+			// Validate the native FX quote too, not just the conversion legs.
+			// A zero security quote remains valid; a currency rate cannot be <= 0.
+			if currencies[NormalizeCurrency(name)] && !q.value.IsPositive() {
+				ok = false
+			}
 			p.Conversion = &price.Conversion{Status: "converted", QuoteCurrency: q.currency, QuoteValue: q.value, QuoteDate: q.date, Rates: legs}
 			if ok {
 				p.Value = q.value.Mul(rate)
