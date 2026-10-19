@@ -58,15 +58,39 @@ func SyncJournal(db *gorm.DB) (string, error) {
 		return err.Error(), err
 	}
 
-	price.UpsertAllByType(db, config.Unknown, prices)
-
 	postings, err := ledger.Cli().Parse(config.GetJournalPath(), prices)
 	if err != nil {
 		return err.Error(), err
 	}
-	posting.UpsertAll(db, postings)
-
+	err = replaceJournal(db, prices, postings)
+	if err != nil {
+		return err.Error(), err
+	}
 	return "", nil
+}
+
+// Validate and parse before entering here. Price provenance and postings are
+// replaced in one transaction, so a failed import leaves the old snapshot intact.
+func replaceJournal(db *gorm.DB, prices []price.Price, postings []*posting.Posting) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Delete(&price.Price{}, "commodity_type = ?", config.Unknown).Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("DELETE FROM postings").Error; err != nil {
+			return err
+		}
+		if len(prices) > 0 {
+			if err := tx.CreateInBatches(&prices, 100).Error; err != nil {
+				return err
+			}
+		}
+		if len(postings) > 0 {
+			if err := tx.CreateInBatches(&postings, 100).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func SyncCommodities(db *gorm.DB) error {

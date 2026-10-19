@@ -8,6 +8,7 @@ import (
 
 	"github.com/ananthakumaran/paisa/internal/cache"
 	"github.com/ananthakumaran/paisa/internal/config"
+	"github.com/ananthakumaran/paisa/internal/ledger"
 	"github.com/ananthakumaran/paisa/internal/model"
 	"github.com/ananthakumaran/paisa/internal/model/posting"
 	"github.com/ananthakumaran/paisa/internal/model/price"
@@ -26,6 +27,9 @@ func GetPrices(db *gorm.DB) gin.H {
 
 	var prices = make(map[string][]price.Price)
 	for _, commodity := range commodities {
+		if ledger.NormalizeCurrency(commodity) == ledger.NormalizeCurrency(config.DefaultCurrency()) {
+			continue
+		}
 		prices[commodity] = service.GetAllPrices(db, commodity)
 	}
 	return gin.H{"prices": prices}
@@ -53,17 +57,19 @@ func GetPriceProviders(db *gorm.DB) gin.H {
 }
 
 func ClearPriceCache(db *gorm.DB) gin.H {
-	err := price.DeleteAll(db)
+	var message string
+	err := db.Transaction(func(tx *gorm.DB) error {
+		if err := price.DeleteAll(tx); err != nil {
+			return err
+		}
+		var err error
+		message, err = model.SyncJournal(tx)
+		return err
+	})
 	if err != nil {
-		return gin.H{"success": false, "message": err.Error()}
+		return gin.H{"success": false, "message": strings.TrimSpace(message + " " + err.Error())}
 	}
-
 	cache.Clear()
-
-	message, err := model.SyncJournal(db)
-	if err != nil {
-		return gin.H{"success": false, "message": message}
-	}
 
 	return gin.H{"success": true}
 }

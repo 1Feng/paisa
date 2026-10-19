@@ -19,6 +19,12 @@
     const date = first.date.subtract(days, "day");
     const last = _.find(prices, (p) => p.date.isSameOrBefore(date, "day"));
     if (!last) return null;
+    if (
+      first.conversion?.status === "missing_fx" ||
+      last.conversion?.status === "missing_fx" ||
+      last.value === 0
+    )
+      return null;
 
     const diffDays = first.date.diff(last.date, "day");
     if (Math.abs(diffDays - days) <= tolerance) {
@@ -46,7 +52,6 @@
 
   async function fetchPrice() {
     ({ prices: prices } = await ajax("/api/price"));
-    prices = _.omitBy(prices, (v) => v.length === 0);
   }
 
   onMount(async () => {
@@ -96,76 +101,102 @@
             <tbody class="has-text-grey-dark">
               {#each Object.keys(prices) as commodity}
                 {@const p = prices[commodity][0]}
-                <Toggleable>
-                  <tr
-                    class={active ? "is-active" : ""}
-                    style="cursor: pointer;"
-                    slot="toggle"
-                    let:active
-                    let:onclick
-                    on:click={(e) => onclick(e)}
+                {#if !p}
+                  <tr><td /><td>{commodity}</td><td colspan="10">{$t("valuation.no_price")}</td></tr
                   >
-                    <td>
-                      <span class="icon has-text-link">
-                        <i
-                          class="fas {active ? 'fa-chevron-up' : 'fa-chevron-down'}"
-                          aria-hidden="true"
-                        />
-                      </span>
-                    </td>
+                {:else}
+                  <Toggleable>
+                    <tr
+                      class={active ? "is-active" : ""}
+                      style="cursor: pointer;"
+                      slot="toggle"
+                      let:active
+                      let:onclick
+                      on:click={(e) => onclick(e)}
+                    >
+                      <td>
+                        <span class="icon has-text-link">
+                          <i
+                            class="fas {active ? 'fa-chevron-up' : 'fa-chevron-down'}"
+                            aria-hidden="true"
+                          />
+                        </span>
+                      </td>
 
-                    <td>{p.commodity_name}</td>
-                    <td class="whitespace-nowrap">{p.date.format("DD MMM YYYY")}</td>
-                    <td class="has-text-right">{formatCurrency(p.value, 4)}</td>
-                    <td class="has-text-right"
-                      ><ValueChange value={change(prices[commodity], 1, 0)} /></td
-                    >
-                    <td class="has-text-right"
-                      ><ValueChange value={change(prices[commodity], 7, 2)} /></td
-                    >
-                    <td class="has-text-right"
-                      ><ValueChange value={change(prices[commodity], 28, 4)} />
-                    </td>
-                    <td class="has-text-right"
-                      ><ValueChange value={change(prices[commodity], 365, 7)} />
-                    </td>
-                    <td class="has-text-right"
-                      ><ValueChange value={change(prices[commodity], 365 * 3, 7)} /></td
-                    >
-                    <td class="has-text-right"
-                      ><ValueChange value={change(prices[commodity], 365 * 5, 7)} /></td
-                    >
-                    <td>{p.commodity_type}</td>
-                    <td>{p.commodity_id}</td>
-                  </tr>
-                  <tr slot="content">
-                    <td colspan="10" />
-                    <td colspan="2" class="p-0">
-                      <div>
-                        <VirtualList
-                          width="100%"
-                          height={_.min([ITEM_SIZE * prices[commodity].length, ITEM_SIZE * 20])}
-                          itemCount={prices[commodity].length}
-                          itemSize={ITEM_SIZE}
-                        >
-                          <div
-                            slot="item"
-                            let:index
-                            let:style
-                            {style}
-                            class="small-box is-flex is-flex-wrap-wrap is-justify-content-space-between is-size-7"
-                          >
-                            {@const p = prices[commodity][index]}
-                            <div class="pl-1">{p.date.format("DD MMM YYYY")}</div>
-                            <div class="pr-1 has-text-right">
-                              {formatCurrency(p.value, 4)}
-                            </div>
+                      <td>{p.commodity_name}</td>
+                      <td class="whitespace-nowrap">{p.date.format("DD MMM YYYY")}</td>
+                      <td class="has-text-right">
+                        {#if p.conversion?.status === "missing_fx"}
+                          {$t("valuation.missing_fx")}
+                        {:else}{formatCurrency(p.value, 4)}{/if}
+                        {#if p.conversion}
+                          <div class="is-size-7 has-text-left">
+                            {$t("valuation.native")}: {p.conversion.quote_value}
+                            {p.conversion.quote_currency}
+                            ({p.conversion.quote_date.format("YYYY-MM-DD")})
+                            {#each p.conversion.rates || [] as rate}
+                              <div>
+                                {rate.from}/{rate.to}: {rate.value} ({rate.date.format(
+                                  "YYYY-MM-DD"
+                                )})
+                              </div>
+                            {/each}
                           </div>
-                        </VirtualList>
-                      </div>
-                    </td>
-                  </tr>
-                </Toggleable>
+                        {/if}
+                      </td>
+                      <td class="has-text-right"
+                        ><ValueChange value={change(prices[commodity], 1, 0)} /></td
+                      >
+                      <td class="has-text-right"
+                        ><ValueChange value={change(prices[commodity], 7, 2)} /></td
+                      >
+                      <td class="has-text-right"
+                        ><ValueChange value={change(prices[commodity], 28, 4)} />
+                      </td>
+                      <td class="has-text-right"
+                        ><ValueChange value={change(prices[commodity], 365, 7)} />
+                      </td>
+                      <td class="has-text-right"
+                        ><ValueChange value={change(prices[commodity], 365 * 3, 7)} /></td
+                      >
+                      <td class="has-text-right"
+                        ><ValueChange value={change(prices[commodity], 365 * 5, 7)} /></td
+                      >
+                      <td>{p.commodity_type}</td>
+                      <td>{p.commodity_id}</td>
+                    </tr>
+                    <tr slot="content">
+                      <td colspan="10" />
+                      <td colspan="2" class="p-0">
+                        <div>
+                          <VirtualList
+                            width="100%"
+                            height={_.min([ITEM_SIZE * prices[commodity].length, ITEM_SIZE * 20])}
+                            itemCount={prices[commodity].length}
+                            itemSize={ITEM_SIZE}
+                          >
+                            <div
+                              slot="item"
+                              let:index
+                              let:style
+                              {style}
+                              class="small-box is-flex is-flex-wrap-wrap is-justify-content-space-between is-size-7"
+                            >
+                              {@const p = prices[commodity][index]}
+                              <div class="pl-1">{p.date.format("DD MMM YYYY")}</div>
+                              <div class="pr-1 has-text-right">
+                                {#if p.conversion?.status === "missing_fx"}
+                                  {$t("valuation.missing_fx")}: {p.conversion.quote_value}
+                                  {p.conversion.quote_currency}
+                                {:else}{formatCurrency(p.value, 4)}{/if}
+                              </div>
+                            </div>
+                          </VirtualList>
+                        </div>
+                      </td>
+                    </tr>
+                  </Toggleable>
+                {/if}
               {/each}
             </tbody>
           </table>

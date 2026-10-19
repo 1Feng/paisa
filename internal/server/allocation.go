@@ -117,7 +117,7 @@ func computeAggregateTimeline(db *gorm.DB, postings []posting.Posting) []map[str
 					marketAmount = marketAmount.Add(rs.cost)
 				} else {
 					price := service.GetUnitPrice(db, commodity, start)
-					if !price.Value.Equal(decimal.Zero) {
+					if price.Available() {
 						marketAmount = marketAmount.Add(rs.units.Mul(price.Value))
 					} else {
 						marketAmount = marketAmount.Add(rs.cost)

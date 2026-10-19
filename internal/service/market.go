@@ -80,7 +80,7 @@ func GetUnitPrice(db *gorm.DB, commodity string, date time.Time) price.Price {
 	}
 
 	pc := utils.BTreeDescendFirstLessOrEqual(pt, price.Price{Date: date})
-	if !pc.Value.Equal(decimal.Zero) {
+	if !pc.Date.IsZero() {
 		return pc
 	}
 
@@ -131,7 +131,7 @@ func GetMarketPrice(db *gorm.DB, p posting.Posting, date time.Time) decimal.Deci
 	}
 
 	pc := GetUnitPrice(db, p.Commodity, date)
-	if !pc.Value.Equal(decimal.Zero) {
+	if pc.Available() {
 		return p.Quantity.Mul(pc.Value)
 	}
 
@@ -144,7 +144,7 @@ func GetPrice(db *gorm.DB, commodity string, quantity decimal.Decimal, date time
 	}
 
 	pc := GetUnitPrice(db, commodity, date)
-	if !pc.Value.Equal(decimal.Zero) {
+	if pc.Available() {
 		return quantity.Mul(pc.Value)
 	}
 
