@@ -31,7 +31,33 @@
   $: title = _.startCase(key);
 
   function newItem(schema: any) {
-    return _.cloneDeep(schema.default[0]);
+    if (schema.default?.length) {
+      return _.cloneDeep(schema.default[0]);
+    }
+    return emptyValue(schema.items);
+  }
+
+  function emptyValue(schema: JSONSchema7 = {}): any {
+    if (schema.default !== undefined) return _.cloneDeep(schema.default);
+    if (schema.enum?.length) return _.cloneDeep(schema.enum[0]);
+    switch (schema.type) {
+      case "object":
+        return Object.fromEntries(
+          (schema.required || []).map((key) => [
+            key,
+            emptyValue(schema.properties?.[key] as JSONSchema7)
+          ])
+        );
+      case "array":
+        return [];
+      case "boolean":
+        return false;
+      case "number":
+      case "integer":
+        return schema.minimum ?? 0;
+      default:
+        return "";
+    }
   }
 
   function sortedProperties(schema: Schema) {
@@ -157,7 +183,17 @@
         <div class="control">
           {#if schema.enum}
             <div class="select is-small">
-              <select {disabled} bind:value {required}>
+              <select
+                {disabled}
+                {value}
+                {required}
+                on:change={(e) => {
+                  value = schema.enum[e.currentTarget.selectedIndex - (required ? 0 : 1)];
+                }}
+              >
+                {#if !required}
+                  <option value={undefined}></option>
+                {/if}
                 {#each schema.enum as option}
                   <option value={option}>{option}</option>
                 {/each}
@@ -299,7 +335,7 @@
       </span>
     </a>
     {#if open}
-      <a on:click={(_e) => (value = [newItem(schema), ...value])} class="config-add">
+      <a on:click={(_e) => (value = [newItem(schema), ...(value || [])])} class="config-add">
         <span class="icon is-small">
           <i class="fas fa-circle-plus"></i>
         </span>
@@ -309,7 +345,7 @@
 
   {#if open}
     <div class="config-body {depth % 2 == 1 ? 'odd' : 'even'}">
-      {#each value as _item, i}
+      {#each value || [] as _item, i}
         <svelte:self
           {allAccounts}
           deletable={() => {
