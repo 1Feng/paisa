@@ -36,6 +36,7 @@ func TestCashBalanceExactPairsDatesAndSigns(t *testing.T) {
 	f.Forecast = true
 	ps = append(ps, f)
 	rules := []config.CashAccount{cashRule("Assets:Bank", "CNY", "cash"), cashRule("Assets:Bank:Fixed", "CNY", "excluded"), cashRule("Assets:Broker", "USD", "cash"), cashRule("Assets:Other", "CNY", "cash"), cashRule("Assets:Mixed", "CNY", "mixed"), cashRule("Assets:Zero", "CNY", "cash")}
+	rules[2].Location = "broker" // Broker securities must not be treated as unfamiliar bank money.
 	quotes := []price.Price{{CommodityName: "USD", Date: cashDay("2024-01-01"), Value: decimal.NewFromInt(7)}, {CommodityName: "USD", Date: cashDay("2024-01-03"), Value: decimal.NewFromInt(99)}}
 	got := computeCashBalance(ps, quotes, rules, "CNY", cashDay("2024-01-02"))
 	require.Equal(t, "150", got.ReferenceTotal)
@@ -112,4 +113,43 @@ func TestCashBalanceAPIRejectsDatesAndDatabaseFailure(t *testing.T) {
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/api/cash_balance", nil))
 	require.Equal(t, 500, w.Code)
+}
+
+func TestCashBalanceUnknownBankCurrenciesAreVisible(t *testing.T) {
+	rules := []config.CashAccount{cashRule("Assets:Bank:Known", "CNY", "cash"), cashRule("Assets:CustomBank", "CNY", "cash")}
+	ps := []posting.Posting{cashPosting("Assets:Bank:New", "USDT", "500", "2024-01-01"), cashPosting("Assets:CustomBank", "UNRECOGNIZED", "1", "2024-01-01")}
+	got := computeCashBalance(ps, nil, rules, "CNY", cashDay("2024-01-02"))
+	require.False(t, got.ClassificationComplete)
+	pending := map[string]bool{}
+	for _, row := range got.Rows {
+		if row.Kind == "unclassified" {
+			pending[row.Account+"/"+row.Currency] = true
+			require.Nil(t, row.ReferenceAmount)
+		}
+	}
+	require.True(t, pending["Assets:Bank:New/USDT"])
+	require.True(t, pending["Assets:CustomBank/UNRECOGNIZED"])
+	require.Equal(t, "0", got.ReferenceTotal)
+}
+
+func TestCashBalanceAPIUsesConfiguredCalendarDay(t *testing.T) {
+	previous := config.GetConfig()
+	previousLocal := time.Local
+	time.Local = time.FixedZone("server-minus12", -12*60*60)
+	config.SetConfigForTest(config.Config{DefaultCurrency: "CNY", TimeZone: "Pacific/Kiritimati"})
+	utils.ResetNow()
+	t.Cleanup(func() { time.Local = previousLocal; config.SetConfigForTest(previous); utils.ResetNow() })
+	today := time.Now().In(config.TimeZone()).Format("2006-01-02")
+	db := inMemoryDB(t)
+	router := gin.New()
+	router.GET("/api/cash_balance", CashBalanceHandler(db))
+	for _, suffix := range []string{"", "?date=" + today} {
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, httptest.NewRequest("GET", "/api/cash_balance"+suffix, nil))
+		require.Equal(t, 200, response.Code)
+		var got map[string]interface{}
+		require.NoError(t, json.Unmarshal(response.Body.Bytes(), &got))
+		require.Equal(t, today, got["as_of"])
+		require.Equal(t, today, got["today"])
+	}
 }

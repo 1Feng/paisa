@@ -2,10 +2,9 @@
   import { onMount } from "svelte";
   import BigNumber from "bignumber.js";
   import { fetchCashBalance, type CashBalance } from "$lib/cash_balance";
-  import { now } from "$lib/utils";
   import { _ as t } from "$lib/i18n";
 
-  let date = now().format("YYYY-MM-DD");
+  let date = "";
   let report: CashBalance;
   let loading = true;
   let failed = false;
@@ -18,8 +17,11 @@
     loading = true;
     failed = false;
     try {
-      const next = await fetchCashBalance(date);
-      if (id === request) report = next;
+      const next = await fetchCashBalance(date || undefined);
+      if (id === request) {
+        report = next;
+        date = next.as_of;
+      }
     } catch {
       if (id === request) failed = true;
     } finally {
@@ -40,7 +42,7 @@
         class="input is-small"
         type="date"
         bind:value={date}
-        max={now().format("YYYY-MM-DD")}
+        max={report?.today}
         on:change={load}
       />
     </label>

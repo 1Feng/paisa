@@ -38,6 +38,7 @@ type CashBalanceGroup struct {
 }
 type CashBalance struct {
 	AsOf                   string `json:"as_of"`
+	Today                  string `json:"today"`
 	Currency               string `json:"currency"`
 	ReferenceTotal         string `json:"reference_total"`
 	FXComplete             bool   `json:"fx_complete"`
@@ -53,11 +54,11 @@ type CashBalance struct {
 
 func CashBalanceHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		day := utils.Now()
+		day := utils.Now().In(config.TimeZone())
 		var err error
 		if raw, exists := c.GetQuery("date"); exists {
 			day, err = time.ParseInLocation("2006-01-02", raw, config.TimeZone())
-			if err != nil || day.Format("2006-01-02") > utils.Now().Format("2006-01-02") {
+			if err != nil || day.Format("2006-01-02") > utils.Now().In(config.TimeZone()).Format("2006-01-02") {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "date must be a valid YYYY-MM-DD on or before today"})
 				return
 			}
@@ -77,17 +78,22 @@ func CashBalanceHandler(db *gorm.DB) gin.HandlerFunc {
 
 func computeCashBalance(ps []posting.Posting, quotes []price.Price, rules []config.CashAccount, base string, asOf time.Time) CashBalance {
 	base = ledger.NormalizeCurrency(base)
+	asOf = asOf.In(config.TimeZone())
 	day := asOf.Format("2006-01-02")
 	end := utils.EndOfDay(asOf)
-	result := CashBalance{AsOf: day, Currency: base, ReferenceTotal: "0", FXComplete: true, ClassificationComplete: len(rules) > 0, PolicyConfigured: len(rules) > 0, Groups: map[string]CashBalanceGroup{}, Rows: []CashBalanceRow{}}
+	result := CashBalance{AsOf: day, Today: utils.Now().In(config.TimeZone()).Format("2006-01-02"), Currency: base, ReferenceTotal: "0", FXComplete: true, ClassificationComplete: len(rules) > 0, PolicyConfigured: len(rules) > 0, Groups: map[string]CashBalanceGroup{}, Rows: []CashBalanceRow{}}
 	type pair struct{ account, currency string }
 	quantities := map[pair]decimal.Decimal{}
 	last := map[pair]string{}
 	known := map[pair]bool{}
+	bankAccounts := map[string]bool{}
 	active := map[pair]config.CashAccount{}
 	for _, r := range rules {
 		key := pair{r.Account, r.Currency}
 		known[key] = true
+		if r.Location == "domestic_bank" || r.Location == "overseas_bank" {
+			bankAccounts[r.Account] = true
+		}
 		if r.Applies(day) {
 			active[key] = r
 		}
@@ -105,7 +111,7 @@ func computeCashBalance(ps []posting.Posting, quotes []price.Price, rules []conf
 		_, fiatErr := currency.ParseISO(key.currency)
 		// Unknown wallet/bank commodities remain discoverable without being treated
 		// as money. Security quantities in mixed brokers never enter currency sums.
-		candidate := known[key] || fiatErr == nil || utils.IsSameOrParent(p.Account, "Assets:Wallet") || utils.IsSameOrParent(p.Account, "Assets:Saving") || utils.IsSameOrParent(p.Account, "Assets:Checking")
+		candidate := known[key] || bankAccounts[p.Account] || fiatErr == nil || utils.IsSameOrParent(p.Account, "Assets:Bank") || utils.IsSameOrParent(p.Account, "Assets:Wallet") || utils.IsSameOrParent(p.Account, "Assets:Saving") || utils.IsSameOrParent(p.Account, "Assets:Checking")
 		if !candidate {
 			continue
 		}

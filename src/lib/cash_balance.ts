@@ -24,6 +24,7 @@ export type CashBalanceRow = {
 };
 export type CashBalance = {
   as_of: string;
+  today: string;
   currency: string;
   reference_total: string;
   fx_complete: boolean;
@@ -37,8 +38,10 @@ export type CashBalance = {
 
 // This additive endpoint preserves decimal strings and plain calendar dates;
 // do not send it through legacy money/date coercion.
-export async function fetchCashBalance(date: string): Promise<CashBalance> {
-  const response = await fetch(`/api/cash_balance?date=${encodeURIComponent(date)}`);
+export async function fetchCashBalance(date?: string): Promise<CashBalance> {
+  const response = await fetch(
+    date === undefined ? "/api/cash_balance" : `/api/cash_balance?date=${encodeURIComponent(date)}`
+  );
   if (!response.ok) throw new Error("Cash balances could not be loaded");
   return response.json();
 }

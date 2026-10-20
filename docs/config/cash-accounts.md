@@ -83,6 +83,6 @@ rule does not authorize inclusion. Do not backdate classifications without evide
   External journal edits still require the normal journal refresh.
 
 `GET /api/cash_balance?date=YYYY-MM-DD` returns the same data for both panels.
-Date defaults to today; invalid or future dates return 400. Database failures
+Date defaults to today in the configured time zone; `today` in the response also supplies the date picker maximum, independent of browser/server time zones. Invalid or future dates return 400. Database failures
 return 500 instead of a successful empty balance. Money uses decimal strings;
 `last_journal_sync` is null when unknown. No new external price fetch is performed.

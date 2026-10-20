@@ -26,3 +26,14 @@ test("failed cash API rejects instead of returning an empty zero balance", async
   globalThis.fetch = (async () => new Response("failed", { status: 500 })) as typeof fetch;
   await expect(fetchCashBalance("2024-01-02")).rejects.toThrow();
 });
+
+test("default cash balance date is selected by the backend, not browser timezone", async () => {
+  let url = "";
+  globalThis.fetch = (async (input) => {
+    url = String(input);
+    return new Response(JSON.stringify({ as_of: "2024-01-03", today: "2024-01-03" }));
+  }) as typeof fetch;
+  const report = await fetchCashBalance();
+  expect(url).toBe("/api/cash_balance");
+  expect(report.as_of).toBe("2024-01-03");
+});
