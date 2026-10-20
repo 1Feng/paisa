@@ -30,6 +30,28 @@ will match all accounts except Tax. If you use negation, then all the
 accounts should be negation. Don't mix negation with others, if done
 the behavior will be undefined.
 
+### Salary income classification
+
+`salary_income_accounts` controls the salary/other-income split in the Investment
+Timeline annual cards. Each entry matches that exact income account and its
+colon-separated descendants. Wildcards and negation are not supported here.
+Omitting this setting preserves the existing `Income:Salary` and `Income:Payroll`
+trees. An explicit list replaces those defaults; `[]` classifies all income as
+other income.
+
+For example, select only salary and bonus to classify reimbursements and
+provident-fund contributions under other income:
+
+```yaml
+salary_income_accounts:
+  - Income:Payroll:Salary
+  - Income:Payroll:Bonus
+```
+
+Other account names such as `Income:Employment:Wages` are also supported. This
+setting only changes the classification of recorded income; it does not calculate
+cash received or change total net income or the savings rate.
+
 ```yaml
 # Path to your journal file. It can be absolute or relative to the
 # configuration file. The main journal file can refer other files using

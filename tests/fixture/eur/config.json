@@ -737,6 +737,15 @@
         "type": "object",
         "ui:widget": "hidden"
       },
+      "salary_income_accounts": {
+        "type": "array",
+        "description": "Income account trees classified as salary in the Investment Timeline annual cards. Matches the exact account and its colon-separated descendants, without wildcards. When omitted, uses Income:Salary and Income:Payroll. An explicit list replaces those defaults; [] classifies all income as other income. Select Salary/Bonus subaccounts to keep reimbursements or provident-fund contributions in other income. This classification does not measure cash received.",
+        "items": {
+          "type": "string",
+          "pattern": "^Income:[^:*]+(:[^:*]+)*$"
+        },
+        "uniqueItems": true
+      },
       "sheets_directory": {
         "description": "Path to your sheets directory. It can be absolute or relative to the configuration file. The sheets directory will be created if it does not exist. By default it will be created in the same directory as the journal file.",
         "type": "string"

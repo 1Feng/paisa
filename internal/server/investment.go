@@ -113,10 +113,19 @@ func filterOutNonInvestmentKinds(postings []posting.Posting, accounts []account.
 	})
 }
 
-// isSalaryIncome includes employment income recorded under either supported
-// account tree, matching whole account segments rather than lookalike prefixes.
+// isSalaryIncome matches the configured salary trees by whole account segment.
+// Omitted configuration preserves the legacy trees; an explicit list replaces them.
 func isSalaryIncome(account string) bool {
-	return utils.IsSameOrParent(account, "Income:Salary") || utils.IsSameOrParent(account, "Income:Payroll")
+	accounts := []string{"Income:Salary", "Income:Payroll"}
+	if configured := config.GetConfig().SalaryIncomeAccounts; configured != nil {
+		accounts = *configured
+	}
+	for _, parent := range accounts {
+		if utils.IsSameOrParent(account, parent) {
+			return true
+		}
+	}
+	return false
 }
 
 func computeInvestmentYearlyCard(start time.Time, assets []posting.Posting, expenses []posting.Posting, incomes []posting.Posting) []InvestmentYearlyCard {

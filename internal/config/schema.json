@@ -1214,6 +1214,15 @@
         "additionalProperties": false
       }
     },
+    "salary_income_accounts": {
+      "type": "array",
+      "description": "Income account trees classified as salary in the Investment Timeline annual cards. Matches the exact account and its colon-separated descendants, without wildcards. When omitted, uses Income:Salary and Income:Payroll. An explicit list replaces those defaults; [] classifies all income as other income. Select Salary/Bonus subaccounts to keep reimbursements or provident-fund contributions in other income. This classification does not measure cash received.",
+      "items": {
+        "type": "string",
+        "pattern": "^Income:[^:*]+(:[^:*]+)*$"
+      },
+      "uniqueItems": true
+    },
     "transfer_accounts": {
       "type": "array",
       "description": "List of account globs that represent internal transfers (e.g. bridge / inter-account-transfer / saving sub-accounts). Transactions whose postings are all under Assets:* AND have at least one leg matching one of these globs are treated as internal transfers and excluded from the Investment Timeline and Savings Rate. They still appear in Cash Flow.",

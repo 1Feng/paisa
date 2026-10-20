@@ -183,6 +183,9 @@ type Config struct {
 	Receivables []Receivable `json:"receivables" yaml:"receivables"`
 
 	TransferAccounts []string `json:"transfer_accounts" yaml:"transfer_accounts"`
+
+	// Nil preserves the legacy salary trees; an explicit empty list disables them.
+	SalaryIncomeAccounts *[]string `json:"salary_income_accounts,omitempty" yaml:"salary_income_accounts,omitempty"`
 }
 
 var config Config
