@@ -14,7 +14,7 @@
   });
 </script>
 
-{#if failed || coverage?.has_conversions || coverage?.current_missing.length}
+{#if failed || coverage?.gaps.length || coverage?.current_missing.length}
   <aside class="notification is-warning is-light m-4" aria-label={$t("valuation.title")}>
     <strong>{$t("valuation.title")}</strong>
     {#if failed}
