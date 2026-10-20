@@ -5,6 +5,65 @@
   "description": "Paisa configuration",
   "type": "object",
   "properties": {
+    "cash_accounts": {
+      "type": "array",
+      "description": "Optional explicit book-cash classifications; rules and cash_review_accounts define the exact review scope. Does not change cash flow or budget.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["account", "currency", "kind"],
+        "properties": {
+          "account": {
+            "type": "string",
+            "minLength": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "enum": ["cash", "excluded", "mixed"]
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "enum": ["bank", "domestic_bank", "overseas_bank", "broker", "other"]
+          },
+          "access": {
+            "type": "string",
+            "minLength": 1,
+            "enum": ["available", "conditional", "unknown"]
+          },
+          "effective_from": {
+            "type": "string",
+            "minLength": 1
+          },
+          "effective_until": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verified_on": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "cash_review_accounts": {
+      "type": "array",
+      "description": "Optional exact asset accounts to review for unclassified positions, in addition to accounts named by cash_accounts. No descendant inheritance.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
     "journal_path": {
       "type": "string",
       "description": "Path to your journal file. It can be absolute or relative to the configuration file. The main journal file can refer other files using <code>include</code> as long as all the files are in the same or sub directory"
