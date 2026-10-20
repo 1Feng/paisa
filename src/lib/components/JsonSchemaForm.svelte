@@ -206,7 +206,11 @@
               class="textarea is-small"
               style="min-width: 350px;max-width: 350px; width: 350px;"
               rows="5"
-              bind:value
+              value={value ?? ""}
+              on:input={(e) => {
+                value =
+                  !required && e.currentTarget.value === "" ? undefined : e.currentTarget.value;
+              }}
               spellcheck="false"
               data-enable-grammarly="false"
             />
@@ -218,7 +222,11 @@
               class="input is-small"
               style="max-width: 350px;"
               type="text"
-              bind:value
+              value={value ?? ""}
+              on:input={(e) => {
+                value =
+                  !required && e.currentTarget.value === "" ? undefined : e.currentTarget.value;
+              }}
             />
           {/if}
         </div>

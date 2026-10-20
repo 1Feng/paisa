@@ -110,7 +110,7 @@ describe("configuration array editing", () => {
             kind: { type: "string", enum: ["cash", "excluded"] },
             location: { type: "string", enum: ["bank", "other"] },
             verified_on: { type: "string", minLength: 1 },
-            evidence: { type: "string", minLength: 1 }
+            evidence: { type: "string", minLength: 1, "ui:widget": "textarea" }
           }
         }
       },
@@ -132,6 +132,28 @@ describe("configuration array editing", () => {
     expect(JSON.parse(JSON.stringify(component.value))).toEqual([
       { account: "Assets:Cash", currency: "CNY", kind: "cash" }
     ]);
+    // Optional evidence can be supplied and removed again without persisting
+    // empty strings rejected by minLength/date validation on save.
+    const evidence = document.querySelector<HTMLTextAreaElement>("textarea")!;
+    const date = inputs[2];
+    for (const [field, text] of [
+      [evidence, "Public statement"],
+      [date, "2026-01-02"]
+    ] as const) {
+      field.value = text;
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    await tick();
+    expect(component.value[0].evidence).toBe("Public statement");
+    expect(component.value[0].verified_on).toBe("2026-01-02");
+    for (const field of [evidence, date]) {
+      field.value = "";
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    await tick();
+    expect(JSON.parse(JSON.stringify(component.value))).toEqual([
+      { account: "Assets:Cash", currency: "CNY", kind: "cash" }
+    ]);
     const selects = [...document.querySelectorAll<HTMLSelectElement>("select")];
     selects[0].value = "excluded";
     selects[0].dispatchEvent(new Event("change", { bubbles: true }));
@@ -146,6 +168,10 @@ describe("configuration array editing", () => {
     expect(JSON.parse(JSON.stringify(component.value))).toEqual([
       { account: "Assets:Cash", currency: "CNY", kind: "excluded" }
     ]);
+    inputs[0].value = "";
+    inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+    await tick();
+    expect(component.value[0].account).toBe("");
   });
 
   test("legacy item defaults are deeply cloned and deletion preserves existing data", async () => {
