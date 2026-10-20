@@ -5,6 +5,77 @@
   "description": "Paisa configuration",
   "type": "object",
   "properties": {
+    "cash_accounts": {
+      "type": "array",
+      "description": "Explicit cash balance classification. Exact account and ISO currency, inclusive effective_from and exclusive effective_until. Does not change cash-flow or budget calculations.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "account",
+          "currency",
+          "kind",
+          "location",
+          "access",
+          "effective_from",
+          "evidence"
+        ],
+        "properties": {
+          "account": {
+            "type": "string",
+            "minLength": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "enum": [
+              "cash",
+              "excluded",
+              "mixed"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "enum": [
+              "domestic_bank",
+              "overseas_bank",
+              "broker",
+              "other"
+            ]
+          },
+          "access": {
+            "type": "string",
+            "minLength": 1,
+            "enum": [
+              "available",
+              "conditional",
+              "unknown"
+            ]
+          },
+          "effective_from": {
+            "type": "string",
+            "minLength": 1
+          },
+          "effective_until": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verified_on": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
     "journal_path": {
       "type": "string",
       "description": "Path to your journal file. It can be absolute or relative to the configuration file. The main journal file can refer other files using <code>include</code> as long as all the files are in the same or sub directory"

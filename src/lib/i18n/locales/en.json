@@ -1,4 +1,55 @@
 {
+  "cash": {
+    "title": "Identified cash balances",
+    "as_of": "Balance date",
+    "boundary": "Book balances include funds that may require settlement or transfer. They are not spendable money: liabilities, entrusted funds and planned spending have not been deducted. Income, cash-flow and budget calculations are unchanged.",
+    "loading": "Loading cash balances…",
+    "failed": "Cash balances could not be loaded. No zero balance has been assumed.",
+    "retry": "Retry",
+    "unknown": "Unknown",
+    "not_configured": "Cash account rules are not configured. The displayed subtotal is not a complete cash balance. Review cash_accounts in settings.",
+    "last_posting": "Latest recorded posting",
+    "sync": "Journal sync time",
+    "not_recorded": "Not recorded",
+    "freshness": "A posting date is not a bank verification or sync date. External ledger edits require a journal refresh.",
+    "reference_total": "Identified cash reference subtotal",
+    "fx_complete": "All included nonzero cash positions can be converted at or before the balance date.",
+    "fx_partial": "Incomplete conversion: positions without eligible FX remain in original currency and are omitted from this subtotal.",
+    "classified": "No nonzero unclassified cash candidates or mixed balances were found within the recorded scope.",
+    "classification_partial": "Incomplete identification: mixed or unclassified positions are omitted. This is not total available cash.",
+    "fx_partial_short": "Partial conversion",
+    "location": {
+      "domestic_bank": "Domestic banks",
+      "overseas_bank": "Overseas banks",
+      "broker": "Broker cash",
+      "other": "Other locations"
+    },
+    "account": "Account",
+    "native": "Original currency balance",
+    "reference": "Reference value",
+    "conditions": "Access and freshness",
+    "rule": "Why included / effective dates",
+    "open_ended": "No end date",
+    "exclusive": "end date excluded",
+    "negative": "Negative balance: check this account",
+    "missing_fx": "FX unavailable",
+    "fx_date": "FX valuation date",
+    "access": {
+      "available": "Access confirmed at verification",
+      "conditional": "Subject to settlement / transfer conditions",
+      "unknown": "Withdrawal availability unverified"
+    },
+    "verified": "Last verified",
+    "pending": "Mixed / unclassified accounts, excluded from subtotal",
+    "pending_help": "No automatic split or fixed deduction is applied. A rule must be effective on the selected date. Zero balances remain visible for future review.",
+    "kind": {
+      "mixed": "Mixed, needs review",
+      "unclassified": "No active classification"
+    },
+    "no_rule": "No active exact account and currency rule. New currencies and renamed accounts require review.",
+    "excluded": "Excluded positions",
+    "restricted": "Transit / retirement account: excluded from cash."
+  },
   "app": {
     "title": "Paisa"
   },

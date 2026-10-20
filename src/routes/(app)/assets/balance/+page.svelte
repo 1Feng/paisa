@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CashBalances from "$lib/components/CashBalances.svelte";
   import AssetsBalance from "$lib/components/AssetsBalance.svelte";
   import { ajax, type AssetBreakdown } from "$lib/utils";
   import _ from "lodash";
@@ -15,6 +16,7 @@
   <div class="container is-fluid">
     <div class="columns">
       <div class="column is-12 pb-0">
+        <CashBalances />
         <AssetsBalance {breakdowns} />
       </div>
     </div>

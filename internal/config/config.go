@@ -164,6 +164,8 @@ type Config struct {
 
 	Budget Budget `json:"budget" yaml:"budget"`
 
+	CashAccounts []CashAccount `json:"cash_accounts,omitempty" yaml:"cash_accounts,omitempty"`
+
 	AllocationTargets []AllocationTarget `json:"allocation_targets" yaml:"allocation_targets"`
 
 	Commodities []Commodity `json:"commodities" yaml:"commodities"`
@@ -437,12 +439,16 @@ func LoadConfig(content []byte, cp string) error {
 		return err
 	}
 
-	config = Config{}
-	err = yaml.Unmarshal(scrubbed, &config)
+	candidate := Config{}
+	err = yaml.Unmarshal(scrubbed, &candidate)
 	if err != nil {
 		return err
 	}
 
+	if err := validateCashAccounts(candidate.CashAccounts); err != nil {
+		return err
+	}
+	config = candidate
 	err = mergo.Merge(&config, defaultConfig, mergo.WithOverrideEmptySlice)
 
 	if err != nil {
