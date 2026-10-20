@@ -9,7 +9,7 @@
   let loading = true;
   let failed = false;
   let request = 0;
-  const locations = ["domestic_bank", "overseas_bank", "broker", "other"];
+  const locations = ["bank", "domestic_bank", "overseas_bank", "broker", "other"];
   const amount = (value: string) => new BigNumber(value).toFormat();
   const reference = (value: string) => new BigNumber(value).toFormat(2);
   async function load() {
@@ -94,14 +94,16 @@
               <tr>
                 <td
                   ><span class="account">{row.account}</span>
-                  <details>
-                    <summary>{$t("cash.rule")}</summary>
-                    <p>{row.rule?.evidence}</p>
-                    <p>
-                      {row.rule?.effective_from} — {row.rule?.effective_until ||
-                        $t("cash.open_ended")} ({$t("cash.exclusive")})
-                    </p>
-                  </details>
+                  {#if row.rule?.evidence || row.rule?.effective_from || row.rule?.effective_until}
+                    <details>
+                      <summary>{$t("cash.rule")}</summary>
+                      <p>{row.rule?.evidence}</p>
+                      <p>
+                        {row.rule?.effective_from || $t("cash.open_start")} — {row.rule
+                          ?.effective_until || $t("cash.open_ended")} ({$t("cash.exclusive")})
+                      </p>
+                    </details>
+                  {/if}
                 </td>
                 <td class:has-text-danger={new BigNumber(row.native_amount).isNegative()}
                   >{row.currency}
@@ -152,7 +154,7 @@
         {#each report.rows.filter((r) => r.kind === "excluded") as row}
           <li class="my-2">
             <span class="account">{row.account}</span> · {row.currency}
-            {amount(row.native_amount)}<br />{row.rule?.evidence || $t("cash.restricted")}
+            {amount(row.native_amount)}<br />{row.rule?.evidence || $t("cash.excluded_rule")}
           </li>
         {/each}
       </ul>

@@ -13,7 +13,6 @@ import (
 	"github.com/ananthakumaran/paisa/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
-	"golang.org/x/text/currency"
 	"gorm.io/gorm"
 )
 
@@ -72,31 +71,39 @@ func CashBalanceHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "cash balance data could not be read"})
 			return
 		}
-		c.JSON(http.StatusOK, computeCashBalance(ps, quotes, config.GetConfig().CashAccounts, config.DefaultCurrency(), day))
+		c.JSON(http.StatusOK, computeCashBalance(ps, quotes, config.GetConfig(), day))
 	}
 }
 
-func computeCashBalance(ps []posting.Posting, quotes []price.Price, rules []config.CashAccount, base string, asOf time.Time) CashBalance {
-	base = ledger.NormalizeCurrency(base)
+func computeCashBalance(ps []posting.Posting, quotes []price.Price, settings config.Config, asOf time.Time) CashBalance {
+	rules := settings.CashAccounts
+	base := ledger.NormalizeCurrency(settings.DefaultCurrency)
 	asOf = asOf.In(config.TimeZone())
 	day := asOf.Format("2006-01-02")
 	end := utils.EndOfDay(asOf)
-	result := CashBalance{AsOf: day, Today: utils.Now().In(config.TimeZone()).Format("2006-01-02"), Currency: base, ReferenceTotal: "0", FXComplete: true, ClassificationComplete: len(rules) > 0, PolicyConfigured: len(rules) > 0, Groups: map[string]CashBalanceGroup{}, Rows: []CashBalanceRow{}}
+	result := CashBalance{AsOf: day, Today: utils.Now().In(config.TimeZone()).Format("2006-01-02"), Currency: base, ReferenceTotal: "0", FXComplete: true, ClassificationComplete: len(rules) > 0 || len(settings.CashReviewAccounts) > 0, PolicyConfigured: len(rules) > 0 || len(settings.CashReviewAccounts) > 0, Groups: map[string]CashBalanceGroup{}, Rows: []CashBalanceRow{}}
 	type pair struct{ account, currency string }
 	quantities := map[pair]decimal.Decimal{}
 	last := map[pair]string{}
-	known := map[pair]bool{}
-	bankAccounts := map[string]bool{}
-	brokerAccounts := map[string]bool{}
+	scope := map[string]bool{}
+	securities := map[string]bool{}
+	for _, name := range settings.CashReviewAccounts {
+		scope[name] = true
+	}
+	for _, commodity := range settings.Commodities {
+		if commodity.Type == config.Stock || commodity.Type == config.MutualFund {
+			securities[commodity.Name] = true
+		}
+	}
 	active := map[pair]config.CashAccount{}
 	for _, r := range rules {
 		key := pair{r.Account, r.Currency}
-		known[key] = true
-		if r.Location == "domestic_bank" || r.Location == "overseas_bank" {
-			bankAccounts[r.Account] = true
+		scope[r.Account] = true
+		if r.Location == "" {
+			r.Location = "other"
 		}
-		if r.Location == "broker" {
-			brokerAccounts[r.Account] = true
+		if r.Access == "" {
+			r.Access = "unknown"
 		}
 		if r.Applies(day) {
 			active[key] = r
@@ -112,12 +119,7 @@ func computeCashBalance(ps []posting.Posting, quotes []price.Price, rules []conf
 			result.LastPosting = d
 		}
 		key := pair{p.Account, ledger.NormalizeCurrency(p.Commodity)}
-		_, fiatErr := currency.ParseISO(key.currency)
-		// Discovery is broader than inclusion: unknown broker commodities must be
-		// reviewed, not guessed to be money or securities. Only an exact active
-		// cash rule can add a position to the cash subtotal.
-		candidate := known[key] || bankAccounts[p.Account] || brokerAccounts[p.Account] || fiatErr == nil || utils.IsSameOrParent(p.Account, "Assets:Brokerage") || utils.IsSameOrParent(p.Account, "Assets:Broker") || utils.IsSameOrParent(p.Account, "Assets:Bank") || utils.IsSameOrParent(p.Account, "Assets:Wallet") || utils.IsSameOrParent(p.Account, "Assets:Saving") || utils.IsSameOrParent(p.Account, "Assets:Checking")
-		if !candidate {
+		if !scope[p.Account] {
 			continue
 		}
 		quantities[key] = quantities[key].Add(p.Quantity)
@@ -152,9 +154,9 @@ func computeCashBalance(ps []posting.Posting, quotes []price.Price, rules []conf
 			row.Access = r.Access
 			row.Reason = "explicit_rule"
 		}
-		if utils.IsSameOrParent(key.account, "Assets:Bridge") || utils.IsSameOrParent(key.account, "Assets:PPA") {
+		if securities[key.currency] {
 			row.Kind = "excluded"
-			row.Reason = "transit_or_retirement"
+			row.Reason = "declared_security"
 		}
 		if row.Kind == "mixed" || row.Kind == "unclassified" {
 			if !q.IsZero() {

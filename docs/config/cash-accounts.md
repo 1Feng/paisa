@@ -1,96 +1,93 @@
-# Identified cash balances (C01)
+# Optional book-cash balances
 
-The dashboard and Assets → Balance display a separate, read-only cash panel.
-It reports **identified book cash**, not spendable money or a budget. Liabilities,
-entrusted funds and planned spending are not deducted. It does not change the
-income, cash-flow, budget, investment or historical-cost calculations.
+Paisa can show a separate book-cash panel on the dashboard and Assets → Balance.
+Configure `cash_accounts` or `cash_review_accounts` to enable it. Without either,
+the dashboard retains the existing checking-balance cards and the asset page is
+unchanged. The feature does not change income, cash-flow, budget, investment,
+historical-cost or existing asset-classification calculations.
 
-Configure `cash_accounts` in Paisa's existing YAML settings. No rules means no
-implicit cash inclusions. Review unclassified positions before using the subtotal.
-Rules match **one exact account and currency**, not descendants. Included cash requires an ISO currency code; excluded/mixed rules may name an exact non-fiat commodity such as USDT. Symbols in
-postings (for example `$` and `¥`) are normalized to their ISO currency. A broker's
-USD balance does not include its securities. USDT is not USD and cannot be included
-by a fiat-currency rule. A new account, renamed account or new currency requires review.
+## Minimal configuration
 
 ```yaml
 cash_accounts:
-  - account: Assets:Bank:Everyday
-    currency: CNY
+  - account: Assets:Everyday
+    currency: EUR
     kind: cash
-    location: domestic_bank
-    access: unknown
-    effective_from: "2026-10-20"
-    evidence: "Account scope reviewed; withdrawal availability not verified"
-  - account: Assets:Broker:Combined
+  - account: Assets:Investing
     currency: USD
     kind: cash
     location: broker
-    access: conditional
-    effective_from: "2026-10-20"
-    evidence: "Fiat balance only; settlement and transfer conditions apply"
-  - account: Assets:Bank:Everyday:Fixed
-    currency: CNY
-    kind: excluded
-    location: domestic_bank
-    access: conditional
-    effective_from: "2026-10-20"
-    evidence: "Fixed-term deposit, not current cash"
-  - account: Assets:Bank:Mixed
-    currency: CNY
-    kind: mixed
-    location: domestic_bank
-    access: unknown
-    effective_from: "2026-10-20"
-    evidence: "Contains both a structured deposit and current funds; no supported split"
 ```
 
-Locations: `domestic_bank`, `overseas_bank`, `broker`, `other`.
-Access: `available` (confirmed at `verified_on`), `conditional` (settlement/transfer
-conditions apply), `unknown`. Access does not change the book-cash subtotal.
-`verified_on` is an optional YYYY-MM-DD date except when access is `available`.
-It is distinct from the latest posting date and does not guarantee future availability.
+Only `account`, `currency` and `kind` are required. Accounts and commodities match
+exactly; parent rules do not classify descendants. Cash requires an ISO currency
+code. Posting symbols such as `$` and `¥` are normalized; USDT is not USD and is
+not fiat cash. Kinds are `cash` (included), `mixed` and `excluded` (not included).
+An account name does not determine inclusion: transit, retirement, institution
+and personal-account naming conventions belong in each user's configuration.
 
-Kinds: `cash` is included; `mixed` and `excluded` are not. Every rule requires an
-explanation in `evidence`. Transit (`Assets:Bridge`) and retirement (`Assets:PPA`)
-accounts cannot be configured as cash. Unclassified fiat positions and unfamiliar
-bank/wallet commodities are shown for review; no security-price fallback is used.
+### Review scope and securities
 
-All undeclared commodities in configured broker accounts and the `Assets:Brokerage`
-/ `Assets:Broker` trees are also surfaced for review, including non-ISO codes.
-Discovery does not authorize inclusion: only an active exact `kind: cash` rule
-contributes to the subtotal. A code alone cannot reliably distinguish a new currency
-from a security. Unclassified securities stay outside cash too; add exact
-`kind: excluded` rules for confirmed securities to resolve their review status.
-No token allowlist or security-name guessing is used.
+Every account named by a cash rule is reviewed for other currencies/commodities.
+Optionally add exact accounts without yet classifying their positions:
 
-Dates are calendar days in the configured time zone. `effective_from` is inclusive;
-optional `effective_until` is exclusive. Conflicting/overlapping rules for a pair,
-invalid dates and wildcard accounts fail configuration validation. Rules classify
-the **whole balance at the selected date**: all prior nonforecast quantities are
-included, even if deposited before the rule starts. An expired or not-yet-effective
-rule does not authorize inclusion. Do not backdate classifications without evidence.
+```yaml
+cash_review_accounts:
+  - Assets:Investing
+  - Assets:Unreviewed
+```
+
+No other accounts are searched automatically. Newly created or renamed accounts
+must be added to the scope. Completeness means **within the configured scope**,
+not all household cash. There is no guarantee that every cash account was selected.
+
+Existing `commodities[].type` declarations of `stock` or `mutualfund` exclude those
+securities from cash in all reviewed accounts, without a separate rule per holding.
+A conflicting cash rule cannot include a declared security. Tickers alone and
+inherited account-name guesses are not proof of a security type. Unknown codes
+remain pending and outside the subtotal; a new currency inside the review scope
+cannot silently disappear or be guessed to be cash. Explicit `excluded` or `mixed`
+rules can classify other non-fiat commodities. Confirmed security declarations
+are current metadata, not a dated history of instrument classification.
+
+## Optional detail and compatibility
+
+- `location`: `bank`, `broker` or `other` (default). Legacy `domestic_bank` and
+  `overseas_bank` values remain readable and retain their separate display groups;
+  new users do not need to classify geography.
+- `access`: `unknown` (default), `conditional`, or `available`. `available` requires
+  `verified_on`. This describes withdrawal information and does not change book cash.
+- `evidence`: optional explanatory note.
+- `effective_from`: inclusive; omitted means no start limit.
+- `effective_until`: exclusive; omitted means no end limit.
+- `verified_on`: optional verification date, distinct from posting and sync dates.
+
+Dated rules classify the whole balance on the selected day, including earlier
+deposits. Inactive rules authorize no inclusion. Overlapping rules for the same
+account/commodity and invalid dates or wildcard account names fail validation.
+Old cash configurations remain readable without rewriting the on-disk YAML.
+Specific transit, retirement and mixed-account decisions must be expressed as
+local `excluded`/`mixed` rules. They are no longer imposed by core account prefixes.
+Existing explicit local rules continue to express those decisions.
 
 ## Values and limitations
 
-- Each posting contributes once to its own account/currency. Parent account rows
-  do not include child balances. Internal cash transfers cancel in native sums.
-- Negative balances are retained with a warning. Configured zero accounts remain visible.
-- Original balances use quantities, not acquisition costs. Reference values use
-  eligible journal FX quotes on or before the selected date in `default_currency`.
-  Nonpositive FX, future quotes or missing conversion legs do not create values.
-- Missing FX keeps the original amount and a null reference amount. Only converted
-  positions enter the reference subtotal, labelled partial. Exactly zero balances
-  need no FX to have an exactly zero reference value.
-- Classification completeness and FX completeness are separate. Mixed/unclassified
-  nonzero positions make identification incomplete, even if all included positions
-  have FX. Full identification does not mean bank verification or spendability.
-- Mixed accounts stay unsplit: no fixed deduction, residual-as-cash assumption or
-  automatic backdated split. Resolve the source/classification separately.
-- The existing cache has no journal-sync timestamp; the panel explicitly reports
-  it as unrecorded. Posting date, bank verification date and sync time are different.
-  External journal edits still require the normal journal refresh.
+- Original amounts use posting quantities, not acquisition cost. Each posting
+  contributes once to its exact account; internal transfers cancel in native sums.
+- Negative balances retain their sign; configured zero balances remain visible.
+- Reference values use journal FX on or before the selected day in
+  `default_currency`, with no future quotes or backward extrapolation.
+- Missing/invalid FX preserves the original amount and a null reference amount.
+  Only converted balances enter the partial subtotal. Exact zero needs no FX.
+- Unknown/mixed nonzero positions make classification incomplete. Classification
+  and FX completeness are independent; neither proves bank reconciliation.
+- Mixed positions are not split by fixed deduction or residual estimation.
+- This is book cash, not spendable money. Debts, entrusted funds, settlement
+  restrictions and planned spending are not deducted.
+- External journal edits require the normal refresh. Unknown journal-sync time
+  remains null rather than being inferred from transaction or file dates.
 
-`GET /api/cash_balance?date=YYYY-MM-DD` returns the same data for both panels.
-Date defaults to today in the configured time zone; `today` in the response also supplies the date picker maximum, independent of browser/server time zones. Invalid or future dates return 400. Database failures
-return 500 instead of a successful empty balance. Money uses decimal strings;
-`last_journal_sync` is null when unknown. No new external price fetch is performed.
+`GET /api/cash_balance?date=YYYY-MM-DD` returns both panels' data. Date defaults
+to today in the configured time zone. Invalid/future dates return 400; database
+failure returns 500 rather than an empty zero balance. Money uses decimal strings.
+No external quotes are fetched by this endpoint.

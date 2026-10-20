@@ -2,7 +2,7 @@
   "cash": {
     "title": "Identified cash balances",
     "as_of": "Balance date",
-    "boundary": "Book balances include funds that may require settlement or transfer. They are not spendable money: liabilities, entrusted funds and planned spending have not been deducted. Income, cash-flow and budget calculations are unchanged.",
+    "boundary": "Book cash in selected accounts, not spendable money. Debts, entrusted funds and planned spending have not been deducted.",
     "loading": "Loading cash balances…",
     "failed": "Cash balances could not be loaded. No zero balance has been assumed.",
     "retry": "Retry",
@@ -15,14 +15,15 @@
     "reference_total": "Identified cash reference subtotal",
     "fx_complete": "All included nonzero cash positions can be converted at or before the balance date.",
     "fx_partial": "Incomplete conversion: positions without eligible FX remain in original currency and are omitted from this subtotal.",
-    "classified": "No nonzero unclassified cash candidates or mixed balances were found within the recorded scope.",
-    "classification_partial": "Incomplete identification: mixed or unclassified positions are omitted. This is not total available cash.",
+    "classified": "No nonzero unresolved balances within the configured scope. Other accounts are not assessed.",
+    "classification_partial": "Mixed or unclassified balances within the configured scope are excluded from the subtotal.",
     "fx_partial_short": "Partial conversion",
     "location": {
       "domestic_bank": "Domestic banks",
       "overseas_bank": "Overseas banks",
       "broker": "Broker cash",
-      "other": "Other locations"
+      "other": "Other locations",
+      "bank": "Bank"
     },
     "account": "Account",
     "native": "Original currency balance",
@@ -46,9 +47,10 @@
       "mixed": "Mixed, needs review",
       "unclassified": "No active classification"
     },
-    "no_rule": "No active exact account and currency rule. New currencies and renamed accounts require review.",
+    "no_rule": "No active classification within the review scope. Confirm the account and commodity role.",
     "excluded": "Excluded positions",
-    "restricted": "Transit / retirement account: excluded from cash."
+    "open_start": "No start limit",
+    "excluded_rule": "Excluded by configuration or declared security type."
   },
   "app": {
     "title": "Paisa"

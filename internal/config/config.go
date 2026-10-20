@@ -164,7 +164,8 @@ type Config struct {
 
 	Budget Budget `json:"budget" yaml:"budget"`
 
-	CashAccounts []CashAccount `json:"cash_accounts,omitempty" yaml:"cash_accounts,omitempty"`
+	CashReviewAccounts []string      `json:"cash_review_accounts,omitempty" yaml:"cash_review_accounts,omitempty"`
+	CashAccounts       []CashAccount `json:"cash_accounts,omitempty" yaml:"cash_accounts,omitempty"`
 
 	AllocationTargets []AllocationTarget `json:"allocation_targets" yaml:"allocation_targets"`
 
@@ -446,6 +447,9 @@ func LoadConfig(content []byte, cp string) error {
 	}
 
 	if err := validateCashAccounts(candidate.CashAccounts); err != nil {
+		return err
+	}
+	if err := validateCashReviewAccounts(candidate.CashReviewAccounts); err != nil {
 		return err
 	}
 	config = candidate

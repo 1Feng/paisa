@@ -1,5 +1,7 @@
 # C01 Cash Account Balances Implementation Plan
 
+> Historical implementation plan; the generality and compatibility rules in `2026-10-20-cash-generality.md` supersede the original account-prefix and mandatory-metadata decisions.
+
 > **For agentic workers:** Use superpowers:executing-plans to implement this plan inline, then independently review the whole branch.
 
 **Goal:** Identify cash with explicit account/currency rules and display native balances, dated reference values and coverage limits.

@@ -1423,18 +1423,14 @@
       },
       "cash_accounts": {
         "type": "array",
-        "description": "Explicit cash balance classification. Exact account and ISO currency, inclusive effective_from and exclusive effective_until. Does not change cash-flow or budget calculations.",
+        "description": "Optional explicit book-cash classifications; rules and cash_review_accounts define the exact review scope. Does not change cash flow or budget.",
         "items": {
           "type": "object",
           "additionalProperties": false,
           "required": [
             "account",
             "currency",
-            "kind",
-            "location",
-            "access",
-            "effective_from",
-            "evidence"
+            "kind"
           ],
           "properties": {
             "account": {
@@ -1458,6 +1454,7 @@
               "type": "string",
               "minLength": 1,
               "enum": [
+                "bank",
                 "domestic_bank",
                 "overseas_bank",
                 "broker",
@@ -1491,6 +1488,15 @@
             }
           }
         }
+      },
+      "cash_review_accounts": {
+        "type": "array",
+        "description": "Optional exact asset accounts to review for unclassified positions, in addition to accounts named by cash_accounts. No descendant inheritance.",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uniqueItems": true
       }
     },
     "required": [

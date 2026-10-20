@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
@@ -23,8 +24,6 @@ func TestCashPolicyLoadAndRejectInvalidRules(t *testing.T) {
 		{"wildcard", "Assets:Bank", "Assets:Bank:*"},
 		{"bad date", "2026-10-20", "2026-02-30"},
 		{"not fiat", "currency: USD", "currency: USDT"},
-		{"bridge", "Assets:Bank", "Assets:Bridge:Bank"},
-		{"retirement", "Assets:Bank", "Assets:PPA:Current"},
 		{"available needs verification", "access: conditional", "access: available"},
 		{"location", "overseas_bank", "mars"},
 		{"access", "conditional", "unlimited"},
@@ -48,4 +47,56 @@ func TestCashPolicyLoadAndRejectInvalidRules(t *testing.T) {
 	require.NoError(t, LoadConfig([]byte(baseConfig+adjacent+extra), ""))
 	require.NoError(t, LoadConfig([]byte(baseConfig+strings.ReplaceAll(strings.ReplaceAll(rule, "kind: cash", "kind: excluded"), "currency: USD", "currency: USDT")), ""))
 	require.NoError(t, LoadConfig([]byte(baseConfig), ""), "existing configurations remain valid")
+}
+
+func TestCashMinimalRulesAndNeutralGroups(t *testing.T) {
+	prev := GetConfig()
+	t.Cleanup(func() { SetConfigForTest(prev) })
+	for _, account := range []string{"Assets:Everyday", "Assets:Bridge:Ordinary", "Assets:PPA:Ordinary"} {
+		require.NoError(t, LoadConfig([]byte(baseConfig+`cash_accounts:
+  - account: `+account+`
+    currency: EUR
+    kind: cash
+`), ""))
+	}
+	require.NoError(t, LoadConfig([]byte(baseConfig+`cash_accounts:
+  - account: Assets:Everyday
+    currency: EUR
+    kind: cash
+    location: bank
+cash_review_accounts: [Assets:Investing]
+`), ""))
+}
+
+func TestCashOptionalIntervalsAndReviewScopeValidation(t *testing.T) {
+	prev := GetConfig()
+	t.Cleanup(func() { SetConfigForTest(prev) })
+	for _, bad := range []string{"Assets:Investing:*", "Liabilities:Card", " Assets:Bank"} {
+		require.Error(t, LoadConfig([]byte(baseConfig+"cash_review_accounts: [\""+bad+"\"]\n"), ""))
+	}
+	minimal := `cash_accounts:
+  - account: Assets:Everyday
+    currency: EUR
+    kind: cash
+    effective_until: "2024-01-03"
+  - account: Assets:Everyday
+    currency: EUR
+    kind: excluded
+    effective_from: "2024-01-03"
+`
+	require.NoError(t, LoadConfig([]byte(baseConfig+minimal), ""))
+	require.Error(t, LoadConfig([]byte(baseConfig+strings.ReplaceAll(minimal, "effective_from: \"2024-01-03\"", "effective_from: \"2024-01-02\"")), ""))
+}
+
+func TestMinimalCashConfigurationCanBeSavedAndReloaded(t *testing.T) {
+	prev := GetConfig()
+	t.Cleanup(func() { SetConfigForTest(prev) })
+	require.NoError(t, LoadConfig([]byte(baseConfig+`cash_accounts:
+  - account: Assets:Everyday
+    currency: EUR
+    kind: cash
+`), ""))
+	data, err := json.Marshal(GetConfig())
+	require.NoError(t, err)
+	require.NoError(t, LoadConfig(data, ""), "config editor JSON save must preserve minimal rules")
 }

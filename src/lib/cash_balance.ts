@@ -2,11 +2,11 @@ export type CashRule = {
   account: string;
   currency: string;
   kind: "cash" | "mixed" | "excluded";
-  location: string;
-  access: string;
-  effective_from: string;
+  location?: string;
+  access?: string;
+  effective_from?: string;
   effective_until?: string;
-  evidence: string;
+  evidence?: string;
   verified_on?: string;
 };
 export type CashBalanceRow = {

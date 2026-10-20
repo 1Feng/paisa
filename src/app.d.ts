@@ -26,6 +26,8 @@ interface GoalSummary {
 }
 
 interface UserConfig {
+  cash_accounts?: import("./lib/cash_balance").CashRule[];
+  cash_review_accounts?: string[];
   default_currency: string;
   readonly: boolean;
   locale: string;
