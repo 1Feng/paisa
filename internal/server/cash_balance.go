@@ -87,12 +87,16 @@ func computeCashBalance(ps []posting.Posting, quotes []price.Price, rules []conf
 	last := map[pair]string{}
 	known := map[pair]bool{}
 	bankAccounts := map[string]bool{}
+	brokerAccounts := map[string]bool{}
 	active := map[pair]config.CashAccount{}
 	for _, r := range rules {
 		key := pair{r.Account, r.Currency}
 		known[key] = true
 		if r.Location == "domestic_bank" || r.Location == "overseas_bank" {
 			bankAccounts[r.Account] = true
+		}
+		if r.Location == "broker" {
+			brokerAccounts[r.Account] = true
 		}
 		if r.Applies(day) {
 			active[key] = r
@@ -109,9 +113,10 @@ func computeCashBalance(ps []posting.Posting, quotes []price.Price, rules []conf
 		}
 		key := pair{p.Account, ledger.NormalizeCurrency(p.Commodity)}
 		_, fiatErr := currency.ParseISO(key.currency)
-		// Unknown wallet/bank commodities remain discoverable without being treated
-		// as money. Security quantities in mixed brokers never enter currency sums.
-		candidate := known[key] || bankAccounts[p.Account] || fiatErr == nil || utils.IsSameOrParent(p.Account, "Assets:Bank") || utils.IsSameOrParent(p.Account, "Assets:Wallet") || utils.IsSameOrParent(p.Account, "Assets:Saving") || utils.IsSameOrParent(p.Account, "Assets:Checking")
+		// Discovery is broader than inclusion: unknown broker commodities must be
+		// reviewed, not guessed to be money or securities. Only an exact active
+		// cash rule can add a position to the cash subtotal.
+		candidate := known[key] || bankAccounts[p.Account] || brokerAccounts[p.Account] || fiatErr == nil || utils.IsSameOrParent(p.Account, "Assets:Brokerage") || utils.IsSameOrParent(p.Account, "Assets:Broker") || utils.IsSameOrParent(p.Account, "Assets:Bank") || utils.IsSameOrParent(p.Account, "Assets:Wallet") || utils.IsSameOrParent(p.Account, "Assets:Saving") || utils.IsSameOrParent(p.Account, "Assets:Checking")
 		if !candidate {
 			continue
 		}

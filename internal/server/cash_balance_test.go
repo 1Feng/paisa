@@ -36,7 +36,10 @@ func TestCashBalanceExactPairsDatesAndSigns(t *testing.T) {
 	f.Forecast = true
 	ps = append(ps, f)
 	rules := []config.CashAccount{cashRule("Assets:Bank", "CNY", "cash"), cashRule("Assets:Bank:Fixed", "CNY", "excluded"), cashRule("Assets:Broker", "USD", "cash"), cashRule("Assets:Other", "CNY", "cash"), cashRule("Assets:Mixed", "CNY", "mixed"), cashRule("Assets:Zero", "CNY", "cash")}
-	rules[2].Location = "broker" // Broker securities must not be treated as unfamiliar bank money.
+	rules[2].Location = "broker"
+	security := cashRule("Assets:Broker", "GOOG", "excluded")
+	security.Location = "broker"
+	rules = append(rules, security)
 	quotes := []price.Price{{CommodityName: "USD", Date: cashDay("2024-01-01"), Value: decimal.NewFromInt(7)}, {CommodityName: "USD", Date: cashDay("2024-01-03"), Value: decimal.NewFromInt(99)}}
 	got := computeCashBalance(ps, quotes, rules, "CNY", cashDay("2024-01-02"))
 	require.Equal(t, "150", got.ReferenceTotal)
@@ -54,7 +57,8 @@ func TestCashBalanceExactPairsDatesAndSigns(t *testing.T) {
 	require.Nil(t, rows["Assets:Mixed/CNY"].ReferenceAmount)
 	require.Equal(t, "unclassified", rows["Assets:New/CNY"].Kind)
 	require.Equal(t, "unclassified", rows["Assets:Wallet/USDT"].Kind)
-	require.NotContains(t, rows, "Assets:Broker/GOOG")
+	require.Equal(t, "excluded", rows["Assets:Broker/GOOG"].Kind)
+	require.Nil(t, rows["Assets:Broker/GOOG"].ReferenceAmount)
 	require.Equal(t, "2024-01-01", rows["Assets:Broker/USD"].QuoteDate)
 	before := computeCashBalance(ps, quotes, rules, "CNY", cashDay("2024-01-01"))
 	require.Equal(t, "0", before.ReferenceTotal)
@@ -152,4 +156,111 @@ func TestCashBalanceAPIUsesConfiguredCalendarDay(t *testing.T) {
 		require.Equal(t, today, got["as_of"])
 		require.Equal(t, today, got["today"])
 	}
+}
+
+// New non-ISO currency must not disappear just because only USD was configured.
+// Unknown broker commodities are not guessed to be money or securities: an
+// explicit exclusion resolves a security while leaving new currencies for review.
+func TestCashBalanceBrokerUnknownCurrenciesRequireReview(t *testing.T) {
+	for _, account := range []string{"Assets:Brokerage:Combined", "Assets:CustomTradingAccount"} {
+		for _, unknown := range []string{"USDT", "USDC", "UNRECOGNIZED"} {
+			t.Run(account+"/"+unknown, func(t *testing.T) {
+				cash := cashRule(account, "USD", "cash")
+				cash.Location = "broker"
+				security := cashRule(account, "GOOG", "excluded")
+				security.Location = "broker"
+				ps := []posting.Posting{cashPosting(account, "$", "10", "2024-01-01"), cashPosting(account, unknown, "50", "2024-01-01"), cashPosting(account, "GOOG", "2", "2024-01-01")}
+				got := computeCashBalance(ps, nil, []config.CashAccount{cash, security}, "USD", cashDay("2024-01-02"))
+				require.False(t, got.ClassificationComplete, "new broker currency must be visible for review")
+				require.Equal(t, "10", got.ReferenceTotal)
+				require.True(t, got.FXComplete)
+				rows := map[string]CashBalanceRow{}
+				for _, row := range got.Rows {
+					rows[row.Currency] = row
+				}
+				require.Contains(t, rows, unknown)
+				require.Equal(t, "unclassified", rows[unknown].Kind)
+				require.Equal(t, "50", rows[unknown].NativeAmount)
+				require.Nil(t, rows[unknown].ReferenceAmount)
+				require.Equal(t, "excluded", rows["GOOG"].Kind)
+				require.Nil(t, rows["GOOG"].ReferenceAmount)
+				// A later explicit exclusion can resolve the currency, never add it as USD.
+				excluded := cashRule(account, unknown, "excluded")
+				excluded.Location = "broker"
+				excluded.EffectiveFrom = "2024-01-03"
+				got = computeCashBalance(ps, nil, []config.CashAccount{cash, security, excluded}, "USD", cashDay("2024-01-02"))
+				require.False(t, got.ClassificationComplete)
+				got = computeCashBalance(ps, nil, []config.CashAccount{cash, security, excluded}, "USD", cashDay("2024-01-03"))
+				require.True(t, got.ClassificationComplete)
+				require.Equal(t, "10", got.ReferenceTotal)
+			})
+		}
+	}
+}
+
+func TestCashBalanceNewBrokerAccountWithoutRulesIsNotHidden(t *testing.T) {
+	rule := cashRule("Assets:Bank:Known", "USD", "cash")
+	ps := []posting.Posting{cashPosting(rule.Account, "USD", "10", "2024-01-01"), cashPosting("Assets:Brokerage:New", "USDT", "50", "2024-01-01")}
+	got := computeCashBalance(ps, nil, []config.CashAccount{rule}, "USD", cashDay("2024-01-02"))
+	require.False(t, got.ClassificationComplete)
+	require.Equal(t, "10", got.ReferenceTotal)
+	found := false
+	for _, row := range got.Rows {
+		if row.Account == "Assets:Brokerage:New" {
+			found = true
+			require.Equal(t, "USDT", row.Currency)
+			require.Equal(t, "unclassified", row.Kind)
+			require.Nil(t, row.ReferenceAmount)
+		}
+	}
+	require.True(t, found)
+}
+
+func TestCashBalanceBrokerUnclassifiedSecurityNeverBecomesCash(t *testing.T) {
+	rule := cashRule("Assets:Brokerage:Combined", "USD", "cash")
+	rule.Location = "broker"
+	ps := []posting.Posting{cashPosting(rule.Account, "USD", "10", "2024-01-01"), cashPosting(rule.Account, "GOOG", "2", "2024-01-01")}
+	got := computeCashBalance(ps, nil, []config.CashAccount{rule}, "USD", cashDay("2024-01-02"))
+	require.Equal(t, "10", got.ReferenceTotal)
+	require.False(t, got.ClassificationComplete)
+	found := false
+	for _, row := range got.Rows {
+		if row.Currency == "GOOG" {
+			found = true
+			require.Equal(t, "unclassified", row.Kind)
+			require.Nil(t, row.ReferenceAmount)
+		}
+	}
+	require.True(t, found, "unclassified broker commodity must remain visible")
+}
+
+func TestCashBalanceAPIBrokerCurrencyReviewAndSecurityExclusion(t *testing.T) {
+	previous := config.GetConfig()
+	cash := cashRule("Assets:Brokerage:Combined", "USD", "cash")
+	cash.Location = "broker"
+	security := cashRule(cash.Account, "GOOG", "excluded")
+	security.Location = "broker"
+	config.SetConfigForTest(config.Config{DefaultCurrency: "USD", CashAccounts: []config.CashAccount{cash, security}})
+	utils.SetNow("2024-01-02")
+	t.Cleanup(func() { config.SetConfigForTest(previous); utils.ResetNow() })
+	db := inMemoryDB(t)
+	ps := []posting.Posting{cashPosting(cash.Account, "$", "10", "2024-01-01"), cashPosting(cash.Account, "USDT", "50", "2024-01-01"), cashPosting(cash.Account, "GOOG", "2", "2024-01-01")}
+	require.NoError(t, db.Create(&ps).Error)
+	router := gin.New()
+	router.GET("/api/cash_balance", CashBalanceHandler(db))
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest("GET", "/api/cash_balance", nil))
+	require.Equal(t, 200, w.Code)
+	var got CashBalance
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &got))
+	require.False(t, got.ClassificationComplete)
+	require.Equal(t, "10", got.ReferenceTotal)
+	kinds := map[string]string{}
+	for _, row := range got.Rows {
+		kinds[row.Currency] = row.Kind
+		if row.Currency != "USD" {
+			require.Nil(t, row.ReferenceAmount)
+		}
+	}
+	require.Equal(t, map[string]string{"USD": "cash", "USDT": "unclassified", "GOOG": "excluded"}, kinds)
 }

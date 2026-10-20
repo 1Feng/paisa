@@ -55,6 +55,14 @@ explanation in `evidence`. Transit (`Assets:Bridge`) and retirement (`Assets:PPA
 accounts cannot be configured as cash. Unclassified fiat positions and unfamiliar
 bank/wallet commodities are shown for review; no security-price fallback is used.
 
+All undeclared commodities in configured broker accounts and the `Assets:Brokerage`
+/ `Assets:Broker` trees are also surfaced for review, including non-ISO codes.
+Discovery does not authorize inclusion: only an active exact `kind: cash` rule
+contributes to the subtotal. A code alone cannot reliably distinguish a new currency
+from a security. Unclassified securities stay outside cash too; add exact
+`kind: excluded` rules for confirmed securities to resolve their review status.
+No token allowlist or security-name guessing is used.
+
 Dates are calendar days in the configured time zone. `effective_from` is inclusive;
 optional `effective_until` is exclusive. Conflicting/overlapping rules for a pair,
 invalid dates and wildcard accounts fail configuration validation. Rules classify
