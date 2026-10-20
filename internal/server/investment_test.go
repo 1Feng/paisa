@@ -4,10 +4,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ananthakumaran/paisa/internal/config"
 	"github.com/ananthakumaran/paisa/internal/model/account"
 	"github.com/ananthakumaran/paisa/internal/model/posting"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func makeInvestPosting(account string, amount int64) posting.Posting {
@@ -134,6 +136,8 @@ func TestIsInvestmentKind_Whitelist(t *testing.T) {
 // Exercise the annual cards, including the complementary other-income bucket.
 // Payroll is employment income; lookalike account names must remain other income.
 func TestInvestmentYearlyCardPayrollIncome(t *testing.T) {
+	previous := config.SetConfigForTest(config.Config{})
+	t.Cleanup(func() { config.SetConfigForTest(previous) })
 	date := time.Date(2020, 1, 15, 0, 0, 0, 0, time.UTC)
 	assets := []posting.Posting{{Date: date, Account: "Assets:Brokerage:Test", Amount: decimal.NewFromInt(100)}}
 	tests := []struct {
@@ -169,6 +173,39 @@ func TestInvestmentYearlyCardPayrollIncome(t *testing.T) {
 			assert.True(t, cards[0].GrossSalaryIncome.Equal(decimal.NewFromInt(salary)), "salary: %s", cards[0].GrossSalaryIncome)
 			assert.True(t, cards[0].GrossOtherIncome.Equal(decimal.NewFromInt(other)), "other: %s", cards[0].GrossOtherIncome)
 			assert.True(t, cards[0].NetIncome.Equal(decimal.NewFromInt(950)), "net income must not change")
+		})
+	}
+}
+
+// Custom mappings replace defaults and change only the salary/other split.
+func TestInvestmentAPIConfiguredSalaryIncome(t *testing.T) {
+	previous := config.GetConfig()
+	t.Cleanup(func() { config.SetConfigForTest(previous) })
+	date := time.Date(2020, 1, 15, 0, 0, 0, 0, time.UTC)
+	assets := []posting.Posting{{Date: date, Account: "Assets:Brokerage:Test", Amount: decimal.NewFromInt(100)}}
+	incomes := []posting.Posting{}
+	for _, name := range []string{"Income:Employment:Wages", "Income:Employment:Wages:Employer", "Income:Employment:WagesOther", "Income:Payroll:Salary", "Income:Payroll:Bonus", "Income:Payroll:Fund", "Income:Payroll:Reimbursement", "Income:Salary"} {
+		incomes = append(incomes, posting.Posting{Date: date, Account: name, Amount: decimal.NewFromInt(-100)})
+	}
+	db := expenseInMemoryDB(t)
+	require.NoError(t, db.Create(&assets).Error)
+	require.NoError(t, db.Create(&incomes).Error)
+	for _, tc := range []struct {
+		name, setting string
+		salary, other int64
+	}{
+		{"arbitrary names and segment matching", "[Income:Employment:Wages]", 200, 600},
+		{"only salary and bonus", "[Income:Payroll:Salary, Income:Payroll:Bonus]", 200, 600},
+		{"explicit empty", "[]", 0, 800},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			require.NoError(t, config.LoadConfig([]byte("journal_path: main.ledger\ndb_path: paisa.db\nsalary_income_accounts: "+tc.setting+"\n"), ""))
+			cards := GetInvestment(db)["yearly_cards"].([]InvestmentYearlyCard)
+			require.NotEmpty(t, cards)
+			assert.True(t, cards[0].GrossSalaryIncome.Equal(decimal.NewFromInt(tc.salary)), "salary: %s", cards[0].GrossSalaryIncome)
+			assert.True(t, cards[0].GrossOtherIncome.Equal(decimal.NewFromInt(tc.other)), "other: %s", cards[0].GrossOtherIncome)
+			assert.True(t, cards[0].NetIncome.Equal(decimal.NewFromInt(800)))
+			assert.True(t, cards[0].SavingsRate.Equal(decimal.RequireFromString("12.5")))
 		})
 	}
 }
