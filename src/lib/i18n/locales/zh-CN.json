@@ -477,5 +477,18 @@
     "upcoming_card": {
       "due_prefix": "到期"
     }
+  },
+  "valuation": {
+    "title": "估值数据完整性",
+    "failed": "无法核验价格完整性，请勿假定所有估值均可用。",
+    "current_missing": "当前估值不完整的品种",
+    "incomplete": "历史汇率存在缺口；相关数值可能含旧的回退估算，不能视为可靠的历史估值。",
+    "gaps": "历史汇率缺口",
+    "exclusive": "不含结束日",
+    "costs_deferred": "报价恢复不代表历史成本或收益已核验；历史成本换算另案处理。",
+    "details": "查看报价及汇率依据",
+    "no_price": "暂无报价，估值未核验",
+    "missing_fx": "该日期缺少可用汇率",
+    "native": "原生报价"
   }
 }

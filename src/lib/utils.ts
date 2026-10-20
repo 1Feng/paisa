@@ -129,6 +129,20 @@ export interface Price {
   commodity_id: string;
   commodity_name: string;
   value: number;
+  conversion?: {
+    status: "converted" | "missing_fx";
+    quote_currency: string;
+    quote_value: number;
+    quote_date: dayjs.Dayjs;
+    rates?: { from: string; to: string; date: dayjs.Dayjs; value: number }[];
+  };
+}
+
+export interface ValuationCoverage {
+  gaps: { commodity: string; date: dayjs.Dayjs; until_date?: dayjs.Dayjs; currency: string }[];
+  current_missing: string[];
+  current_complete: boolean;
+  has_conversions: boolean;
 }
 
 // ExpenseSummary mirrors `server.ExpenseSummary` — the per-period
@@ -734,6 +748,7 @@ export function ajax(
 ): Promise<{ success: boolean; error?: string }>;
 
 export function ajax(route: "/api/ping"): Promise<{ success: boolean; error?: string }>;
+export function ajax(route: "/api/valuation", options?: RequestOptions): Promise<ValuationCoverage>;
 
 export async function ajax(
   route: string,

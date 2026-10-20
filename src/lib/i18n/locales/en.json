@@ -477,5 +477,18 @@
     "upcoming_card": {
       "due_prefix": "due"
     }
+  },
+  "valuation": {
+    "title": "Valuation coverage",
+    "failed": "Price completeness could not be checked. Do not assume all valuations are available.",
+    "current_missing": "Current valuation is incomplete for",
+    "incomplete": "Historical FX coverage is incomplete. Affected figures may contain legacy fallback estimates and are not reliable historical valuations.",
+    "gaps": "Historical FX gaps",
+    "exclusive": "end date excluded",
+    "costs_deferred": "Restored prices do not validate historical costs or returns; cost conversion remains a separate task.",
+    "details": "View quote and FX details",
+    "no_price": "No price available — valuation unverified",
+    "missing_fx": "FX unavailable for this date",
+    "native": "Native quote"
   }
 }

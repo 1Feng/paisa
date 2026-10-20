@@ -343,7 +343,7 @@ func computeNetworthTimeline(db *gorm.DB, postings []posting.Posting, computeBal
 					balanceUnits = balanceUnits.Add(rs.balanceUnits)
 				}
 				price := service.GetUnitPrice(db, commodity, start)
-				if !price.Value.Equal(decimal.Zero) {
+				if price.Available() {
 					balance = balance.Add(toBase(store, rs.balanceUnits.Mul(price.Value), defaultCurrency, base, start))
 				} else {
 					balance = balance.Add(toBase(store, rs.balance, defaultCurrency, base, start))

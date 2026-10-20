@@ -175,7 +175,7 @@ func RunningBalance(db *gorm.DB, postings []posting.Posting) []Point {
 				balance = balance.Add(quantity)
 			} else {
 				price := service.GetUnitPrice(db, commodity, start)
-				if !price.Value.Equal(decimal.Zero) {
+				if price.Available() {
 					balance = balance.Add(quantity.Mul(price.Value))
 				} else {
 					balance = balance.Add(quantity)

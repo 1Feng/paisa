@@ -4,6 +4,7 @@
   import _ from "lodash";
   import Spinner from "$lib/components/Spinner.svelte";
   import Navbar from "$lib/components/Navbar.svelte";
+  import ValuationNotice from "$lib/components/ValuationNotice.svelte";
   import { willClearTippy, willRefresh } from "../../store";
 
   let isBurger: boolean = null;
@@ -57,6 +58,7 @@
 
 {#key $willRefresh}
   <Navbar bind:isBurger />
+  <ValuationNotice />
 
   <Spinner>
     <slot />

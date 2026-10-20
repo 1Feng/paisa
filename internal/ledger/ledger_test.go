@@ -25,9 +25,9 @@ func TestParseLegerPrices(t *testing.T) {
 	assertPriceEqual(t, parsedPrices[0], "2023/05/01", "EUR", 70)
 
 	parsedPrices, _ = parseLedgerPrices("P 2023/05/01 00:00:00 USD 0.9 EUR\n", "INR")
-	assert.Len(t, parsedPrices, 0)
+	assert.Equal(t, "missing_fx", parsedPrices[0].Conversion.Status)
 	parsedPrices, _ = parseLedgerPrices("P 2023/05/01 00:00:00 USD $0.9\n", "INR")
-	assert.Len(t, parsedPrices, 0)
+	assert.Equal(t, "missing_fx", parsedPrices[0].Conversion.Status)
 
 	parsedPrices, _ = parseLedgerPrices("P 2022/01/29 00:50:00 UAH 0.026 EUR\n", "EUR")
 	assertPriceEqual(t, parsedPrices[0], "2022/01/29", "UAH", 0.026)
@@ -75,10 +75,13 @@ func TestParseLedgerPrices_NormalizesDollarToUSD(t *testing.T) {
 	assertPriceEqual(t, parsedPrices[0], "2023/05/01", "EUR", 1.1)
 }
 
-func TestParseLedgerPrices_DropsForeignCurrency(t *testing.T) {
+func TestParseLedgerPrices_PreservesUnconvertibleQuote(t *testing.T) {
 	parsedPrices, err := parseLedgerPrices("P 2023/05/01 00:00:00 USD 0.9 EUR\n", "CNY")
 	assert.NoError(t, err)
-	assert.Len(t, parsedPrices, 0)
+	if assert.Len(t, parsedPrices, 1) {
+		assert.Equal(t, "missing_fx", parsedPrices[0].Conversion.Status)
+		assert.Equal(t, "EUR", parsedPrices[0].Conversion.QuoteCurrency)
+	}
 }
 
 func TestParseHLedgerPrices_NormalizesYenSymbolToCNY(t *testing.T) {

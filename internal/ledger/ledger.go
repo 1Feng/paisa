@@ -442,33 +442,7 @@ func parseHLedgerCommodities(journalPath string) ([]string, error) {
 }
 
 func parseLedgerPrices(output string, defaultCurrency string) ([]price.Price, error) {
-	var prices []price.Price
-	defaultCurrency = NormalizeCurrency(defaultCurrency)
-	re := regexp.MustCompile(`P (\d{4}\/\d{2}\/\d{2}) (?:\d{2}:\d{2}:\d{2}) ([^\s\d.-]+|"[^"]+") ([^\n]+)\n`)
-	matches := re.FindAllStringSubmatch(output, -1)
-
-	for _, match := range matches {
-		target, value, err := parseAmount(match[3])
-		if err != nil {
-			return nil, err
-		}
-
-		target = NormalizeCurrency(target)
-		if target != defaultCurrency {
-			continue
-		}
-
-		commodity := utils.UnQuote(match[2])
-
-		date, err := time.ParseInLocation("2006/01/02", match[1], config.TimeZone())
-		if err != nil {
-			return nil, err
-		}
-
-		prices = append(prices, price.Price{Date: date, CommodityName: commodity, CommodityID: commodity, CommodityType: config.Unknown, Value: value})
-
-	}
-	return prices, nil
+	return convertJournalPrices(output, defaultCurrency)
 }
 
 func parseHLedgerPrices(output string, defaultCurrency string) ([]price.Price, error) {
