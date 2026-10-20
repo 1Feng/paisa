@@ -485,7 +485,7 @@
     "incomplete": "Historical FX coverage is incomplete. Affected figures may contain legacy fallback estimates and are not reliable historical valuations.",
     "gaps": "Historical FX gaps",
     "exclusive": "end date excluded",
-    "costs_deferred": "Restored prices do not validate historical costs or returns; cost conversion remains a separate task.",
+    "costs_deferred": "Reference valuations do not validate historical acquisition costs or returns.",
     "details": "View quote and FX details",
     "no_price": "No price available — valuation unverified",
     "missing_fx": "FX unavailable for this date",
