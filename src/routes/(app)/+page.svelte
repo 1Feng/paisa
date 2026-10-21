@@ -32,7 +32,6 @@
   import GoalSummaryCard from "$lib/components/GoalSummaryCard.svelte";
   import LegendCard from "$lib/components/LegendCard.svelte";
   import BalanceCard from "$lib/components/BalanceCard.svelte";
-  import CashBalances from "$lib/components/CashBalances.svelte";
   import { _ as t } from "$lib/i18n";
 
   let UntypedMasonryGrid = MasonryGrid as any;
@@ -53,9 +52,6 @@
   let selectedExpenses: Posting[] = [];
   let isEmpty = false;
   let checkingBalances: Record<string, AssetBreakdown> = {};
-  const cashEnabled = !!(
-    USER_CONFIG.cash_accounts?.length || USER_CONFIG.cash_review_accounts?.length
-  );
 
   $: if (renderer) {
     selectedExpenses = expenses[month] || [];
@@ -212,11 +208,7 @@
           </div>
         </div>
 
-        {#if cashEnabled}
-          <div class="tile is-parent">
-            <div class="tile is-child min-w-0"><CashBalances /></div>
-          </div>
-        {:else if !_.isEmpty(checkingBalances)}
+        {#if !_.isEmpty(checkingBalances)}
           <div class="tile is-parent">
             <article class="tile is-child">
               <div class="content">
